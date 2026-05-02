@@ -1,0 +1,135 @@
+/* ─────────────────────────────────────────────────────────────
+   Memoria — Beige / Café palette tokens
+   3案 (sand / latte / linen) を data-theme で切替
+   ───────────────────────────────────────────────────────────── */
+
+:root,
+[data-theme="sand"] {
+  /* A — Sand (推奨案。落ち着いたベージュ × 深い珈琲ブラウンのアクセント) */
+  --bg:        #f5efe6;   /* ページ背景。生成り */
+  --bg-elev:  #fbf7f0;   /* カード・シート */
+  --bg-soft:  #ece4d4;   /* セクション境界 */
+  --line:     #e2d6c1;   /* 罫線 */
+  --line-strong:#cbb89a;
+  --ink:      #2a221a;   /* 主要テキスト (#000は冷たいので避け、深いブラウン) */
+  --ink-2:    #5b4d3d;   /* 補助テキスト */
+  --ink-3:    #8a7964;   /* キャプション、メタ */
+  --accent:   #7a4f2c;   /* 焙煎ブラウン。アクセント */
+  --accent-soft: #b88a5e;
+  --gold:     #b89265;   /* 金茶。リンク・アクティブ */
+  --shadow-1: 0 1px 2px rgba(74,55,35,.06), 0 2px 8px rgba(74,55,35,.05);
+  --shadow-2: 0 6px 20px rgba(74,55,35,.10), 0 2px 6px rgba(74,55,35,.06);
+  --shadow-overlay: 0 12px 40px rgba(20,14,8,.45);
+}
+
+[data-theme="latte"] {
+  /* B — Latte (より明るくミルキー、甘さが強めのカフェ感) */
+  --bg:        #f7f1e8;
+  --bg-elev:  #ffffff;
+  --bg-soft:  #f0e7d7;
+  --line:     #ead9bd;
+  --line-strong:#d4b88a;
+  --ink:      #3a2a1e;
+  --ink-2:    #6a553f;
+  --ink-3:    #a08a72;
+  --accent:   #9b6a3c;
+  --accent-soft: #c9956a;
+  --gold:     #c9a065;
+  --shadow-1: 0 1px 2px rgba(60,40,20,.05), 0 2px 8px rgba(60,40,20,.04);
+  --shadow-2: 0 6px 20px rgba(60,40,20,.08), 0 2px 6px rgba(60,40,20,.05);
+  --shadow-overlay: 0 12px 40px rgba(20,14,8,.45);
+}
+
+[data-theme="linen"] {
+  /* C — Linen (ニュートラル寄り、グレージュ。作品展示色を強める) */
+  --bg:        #f1ece4;
+  --bg-elev:  #f9f5ee;
+  --bg-soft:  #e6dfd2;
+  --line:     #d8cdb9;
+  --line-strong:#b8a98a;
+  --ink:      #25201a;
+  --ink-2:    #574d40;
+  --ink-3:    #877c6c;
+  --accent:   #5e4a36;
+  --accent-soft: #9a8266;
+  --gold:     #9b7c4a;
+  --shadow-1: 0 1px 2px rgba(40,30,20,.06), 0 2px 8px rgba(40,30,20,.05);
+  --shadow-2: 0 6px 20px rgba(40,30,20,.10), 0 2px 6px rgba(40,30,20,.06);
+  --shadow-overlay: 0 12px 40px rgba(20,14,8,.45);
+}
+
+/* Type — Shippori Mincho (見出し / 上品さ) + Noto Sans JP (本文 / 読みやすさ)
+   英字/数字に Cormorant Garamond をスタックして雑誌的に */
+:root {
+  --font-display: 'Cormorant Garamond', 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
+  --font-serif:   'Shippori Mincho', 'Hiragino Mincho ProN', 'YuMincho', serif;
+  --font-sans:    'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
+
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Base — phone canvas
+   ───────────────────────────────────────────────────────────── */
+.phone-screen {
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "palt";
+  letter-spacing: .01em;
+}
+.phone-screen ::selection { background: var(--accent-soft); color: #fff; }
+
+/* Reusable bits */
+.serif { font-family: var(--font-serif); }
+.display { font-family: var(--font-display); font-weight: 500; letter-spacing: .01em; }
+.muted { color: var(--ink-3); }
+.hairline { border-top: 1px solid var(--line); }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 11px; letter-spacing: .08em;
+  background: rgba(184,146,101,.12);
+  color: var(--accent);
+  border: 1px solid rgba(184,146,101,.25);
+}
+.tag-dark {
+  background: rgba(255,255,255,.14);
+  color: rgba(255,255,255,.92);
+  border-color: rgba(255,255,255,.22);
+}
+
+/* Card with paper-like warmth */
+.paper {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-1);
+}
+
+/* Subtle grain overlay — adds the "film/print" feel without being noisy */
+.grain::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.55  0 0 0 0 0.45  0 0 0 0 0.35  0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode: multiply;
+  opacity: .35;
+}
+
+/* Chip / pill button */
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 36px; padding: 0 14px; border-radius: 999px;
+  background: var(--bg-elev); border: 1px solid var(--line);
+  color: var(--ink-2); font-size: 13px;
+}
+.chip.is-active {
+  background: var(--ink); color: var(--bg-elev); border-color: var(--ink);
+}
+
+/* Tap target floor 44px enforced via class */
+.tap { min-width: 44px; min-height: 44px; }

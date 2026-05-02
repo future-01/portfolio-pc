@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1200" width="900" height="1200">
+    <defs>
+      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#a89072"></stop>
+        <stop offset="1" stop-color="#6e5a44"></stop>
+      </linearGradient>
+      <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="5"></feTurbulence><feColorMatrix values="0 0 0 0 0.6  0 0 0 0 0.5  0 0 0 0 0.4  0 0 0 0.08 0"></feColorMatrix><feComposite in2="SourceGraphic" operator="in"></feComposite></filter>
+    </defs>
+    
+    <rect width="900" height="1200" fill="url(#g)"></rect>
+    <ellipse cx="450" cy="384" rx="108" ry="117" fill="#6e5a44" opacity="0.55"></ellipse>
+    <path d="M180 1200 Q450 540 720 1200 Z" fill="#6e5a44" opacity="0.55"></path>
+    <ellipse cx="450" cy="1260" rx="450" ry="216" fill="#a89072" opacity="0.5"></ellipse>
+    <rect width="900" height="1200" filter="url(#grain)" opacity="0.6"></rect>
+  </svg>

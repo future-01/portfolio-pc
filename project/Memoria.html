@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Memoria — 家族のための写真ポートフォリオ</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="tokens.css"/>
+
+<style>
+  html, body { margin: 0; background: #f0eee9; }
+  body { font-family: 'Noto Sans JP', sans-serif; color: #2a221a; }
+  /* Section header in canvas */
+  .doc {
+    width: 720px; padding: 28px 32px; border-radius: 16px;
+    background: #fbf7f0; border: 1px solid #e2d6c1; box-shadow: 0 1px 2px rgba(74,55,35,.06);
+    color: #2a221a; line-height: 1.75; font-size: 13.5px;
+  }
+  .doc h2 { font-family: 'Shippori Mincho', serif; font-weight: 500; font-size: 22px; margin: 0 0 6px; letter-spacing: .01em; }
+  .doc h3 { font-family: 'Shippori Mincho', serif; font-weight: 500; font-size: 15.5px; margin: 18px 0 6px; color: #5b4d3d; letter-spacing: .03em; }
+  .doc p { margin: 0 0 10px; color: #3d3025; }
+  .doc .lead { color: #5b4d3d; font-size: 13px; margin-bottom: 16px; font-style: italic;
+    font-family: 'Cormorant Garamond', serif; }
+  .doc ul { margin: 4px 0 12px; padding-left: 18px; }
+  .doc ul li { margin-bottom: 4px; color: #3d3025; }
+  .doc .kw { display: inline-flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 12px; }
+  .doc .kw span { display: inline-block; padding: 4px 10px; border-radius: 999px;
+    background: rgba(184,146,101,.14); color: #7a4f2c; font-size: 11px; letter-spacing: .04em;
+    border: 1px solid rgba(184,146,101,.25); }
+  .doc .pill { display: inline-block; padding: 2px 8px; border-radius: 4px;
+    background: #f0e7d3; color: #5b4d3d; font-size: 11px; font-family: 'Cormorant Garamond', serif;
+    font-style: italic; margin-right: 4px; letter-spacing: .04em; }
+  .doc table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 6px 0 14px; }
+  .doc table th, .doc table td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #ead9bd; }
+  .doc table th { background: #f3eadb; color: #5b4d3d; font-weight: 500; font-size: 11px;
+    letter-spacing: .08em; text-transform: uppercase; }
+
+  .palette-strip { display: flex; gap: 6px; margin: 6px 0 12px; }
+  .palette-strip .sw { flex: 1; height: 38px; border-radius: 8px; border: 1px solid rgba(0,0,0,.06);
+    display: flex; align-items: flex-end; padding: 4px 6px; font-size: 9.5px;
+    color: rgba(255,255,255,.8); font-family: 'Cormorant Garamond', serif; letter-spacing: .04em; }
+
+  .copy-table { font-size: 12.5px; }
+  .copy-table td:first-child { color: #8a7964; white-space: nowrap; padding-right: 14px; }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<!-- React + Babel -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script src="data.js"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="UI.jsx"></script>
+<script type="text/babel" src="Phone.jsx"></script>
+<script type="text/babel" src="screens/Onboarding.jsx"></script>
+<script type="text/babel" src="screens/Home.jsx"></script>
+<script type="text/babel" src="screens/AlbumsList.jsx"></script>
+<script type="text/babel" src="screens/Album.jsx"></script>
+<script type="text/babel" src="screens/Lightbox.jsx"></script>
+<script type="text/babel" src="screens/VideoLightbox.jsx"></script>
+<script type="text/babel" src="screens/Years.jsx"></script>
+<script type="text/babel" src="screens/Search.jsx"></script>
+<script type="text/babel" src="screens/Profile.jsx"></script>
+
+<script type="text/babel">
+const { DesignCanvas, DCSection, DCArtboard } = window;
+const { Phone, ScreenOnboarding, ScreenHome, ScreenAlbumsList,
+        ScreenAlbum, ScreenLightbox, ScreenVideoLightbox,
+        ScreenYears, ScreenSearch, ScreenProfile } = window;
+
+const PHONE_W = 406, PHONE_H = 860; // 390+16 / 844+16
+
+function Frame({ children, theme = 'sand' }) {
+  return <div data-theme={theme} style={{ background: '#f0eee9', padding: 30 }}>{children}</div>;
+}
+
+// Document blocks
+function Concept() {
+  return (
+    <div className="doc">
+      <h2>Memoria — 家族と共に歩く、私的な写真集。</h2>
+      <p className="lead">"Memoria" は、ラテン語で「記憶」。<br/>限定公開 × 作品展示。家族の温度感を残しながら、写真そのものを主役にする静かな器。</p>
+
+      <h3>1. サイトコンセプト</h3>
+      <p>カフェの片隅に置かれた、革装の写真集をめくるような体験。
+      高級ホテルのギャラリーよりは、信頼している家族のリビングに飾られた一冊の本に近い、温度のあるモダンさ。
+      「かっこよさ3 : 温かみ7」を、ベージュ × 焙煎ブラウンの彩度を抑えた配色、明朝体ヘッドライン、紙のような質感で表現する。</p>
+
+      <h3>2. デザインキーワード</h3>
+      <div className="kw">
+        <span>静謐</span><span>余白</span><span>ベージュ</span><span>カフェラテ</span>
+        <span>明朝体</span><span>紙の質感</span><span>家族の温度</span><span>編集された静けさ</span>
+        <span>金茶のアクセント</span><span>控えめな上品さ</span>
+      </div>
+
+      <h3>3. トーン&マナー</h3>
+      <p>言葉づかいは、ですます調で柔らかく、家族写真の裏に書く一筆書きのメッセージのように。
+      機能名はカタカナ・英字を控え、漢字仮名交じり文を主役に。
+      数字や英字は Cormorant Garamond でセリフ体・斜体にして、雑誌の見出しのような「編集された静けさ」を作る。</p>
+
+      <h3>4. 推奨ページ構成</h3>
+      <table>
+        <thead><tr><th>#</th><th>画面</th><th>役割</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>ロック / 入口</td><td>合言葉。家族・親しい人以外を入れない。</td></tr>
+          <tr><td>1</td><td>ホーム</td><td>最新アルバム + ハイライト + 年別への入口。</td></tr>
+          <tr><td>2</td><td>アルバム一覧</td><td>旅行先別。リスト/グリッドで切替。</td></tr>
+          <tr><td>3</td><td>アルバム詳細</td><td>日付で区切られた写真グリッド。</td></tr>
+          <tr><td>4</td><td>ライトボックス</td><td>1枚を主役として大きく見せる。</td></tr>
+          <tr><td>5</td><td>年別ビュー</td><td>補助分類。スクロールで時間旅行。</td></tr>
+          <tr><td>6</td><td>さがす</td><td>キーワード・カテゴリ・全写真。</td></tr>
+          <tr><td>7</td><td>設定</td><td>合言葉・招待・ダウンロード可否。</td></tr>
+        </tbody>
+      </table>
+
+      <h3>5. モバイルサイトマップ (5タブ)</h3>
+      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 14 }}>
+        ・<b>アルバム</b> (Home, Default) → アルバム詳細 → ライトボックス<br/>
+        ・<b>年別</b> → 年内アルバム一覧 → アルバム詳細<br/>
+        ・<b>さがす</b> → 検索 / カテゴリ / すべての写真<br/>
+        ・<b>お気に入り</b> (Heart) → ハイライトのみ<br/>
+        ・<b>設定</b> → 合言葉・招待・画質
+      </p>
+    </div>
+  );
+}
+
+function Palettes() {
+  return (
+    <div className="doc">
+      <h2>配色案 — ベージュを軸に3案</h2>
+      <p className="lead">いずれも背景:文字のコントラスト比 ≥ 4.5 を守る。下の "Sand" を本案として推奨。</p>
+
+      <h3>A. <span style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic' }}>Sand</span> (推奨)</h3>
+      <div className="palette-strip">
+        <div className="sw" style={{ background: '#f5efe6', color: '#5b4d3d' }}>BG #f5efe6</div>
+        <div className="sw" style={{ background: '#fbf7f0', color: '#5b4d3d' }}>Card #fbf7f0</div>
+        <div className="sw" style={{ background: '#e2d6c1', color: '#5b4d3d' }}>Line #e2d6c1</div>
+        <div className="sw" style={{ background: '#7a4f2c' }}>Accent #7a4f2c</div>
+        <div className="sw" style={{ background: '#b89265' }}>Gold #b89265</div>
+        <div className="sw" style={{ background: '#2a221a' }}>Ink #2a221a</div>
+      </div>
+      <p>落ち着いた生成り背景に、深い焙煎ブラウンを引き締めに。家族写真の肌色と最も喧嘩しない。</p>
+
+      <h3>B. <span style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic' }}>Latte</span></h3>
+      <div className="palette-strip">
+        <div className="sw" style={{ background: '#f7f1e8', color: '#6a553f' }}>BG</div>
+        <div className="sw" style={{ background: '#ffffff', color: '#6a553f' }}>Card</div>
+        <div className="sw" style={{ background: '#ead9bd', color: '#6a553f' }}>Line</div>
+        <div className="sw" style={{ background: '#9b6a3c' }}>Accent</div>
+        <div className="sw" style={{ background: '#c9a065' }}>Gold</div>
+        <div className="sw" style={{ background: '#3a2a1e' }}>Ink</div>
+      </div>
+      <p>より明るくミルキー。子どもの写真や食卓の写真が映えるが、作品展示の "凛" としたトーンはやや弱い。</p>
+
+      <h3>C. <span style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic' }}>Linen</span></h3>
+      <div className="palette-strip">
+        <div className="sw" style={{ background: '#f1ece4', color: '#574d40' }}>BG</div>
+        <div className="sw" style={{ background: '#f9f5ee', color: '#574d40' }}>Card</div>
+        <div className="sw" style={{ background: '#d8cdb9', color: '#574d40' }}>Line</div>
+        <div className="sw" style={{ background: '#5e4a36' }}>Accent</div>
+        <div className="sw" style={{ background: '#9b7c4a' }}>Gold</div>
+        <div className="sw" style={{ background: '#25201a' }}>Ink</div>
+      </div>
+      <p>もっともギャラリー寄り。グレー寄りのベージュで、人物写真より風景写真が主役のとき向き。</p>
+
+      <h3>推奨</h3>
+      <p><b>A. Sand</b> を本案として推奨。家族向けの温かさ (B) と作品展示の上品さ (C) の中間で、本件の「3:7」比率に最も近い。</p>
+    </div>
+  );
+}
+
+function TypeAndSpace() {
+  return (
+    <div className="doc">
+      <h2>フォント・余白・カードUI</h2>
+      <h3>フォント</h3>
+      <p>
+        ・見出し: <b style={{ fontFamily: "'Shippori Mincho',serif" }}>Shippori Mincho</b> (500) — 控えめなコントラストで上品。<br/>
+        ・本文: <b>Noto Sans JP</b> (400/500) — 高密度な情報でも読みやすい。<br/>
+        ・英数: <b style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic' }}>Cormorant Garamond</b> (italic 500) — 数字・年号・キャプションを雑誌風に。
+      </p>
+      <p>本文サイズは <span className="pill">14px</span> 基本、見出しは <span className="pill">22–32px</span>。スマホで小さくしすぎない。</p>
+
+      <h3>余白</h3>
+      <p>左右パディングは <b>22px</b> 基本 (写真グリッドだけ 14–18px に詰める)。
+      セクション縦余白は <b>22–32px</b>。窮屈にしないため要素間 <b>14px</b> 以上を確保。</p>
+
+      <h3>角丸 / 線 / 影</h3>
+      <p>
+        ・カード角丸: <span className="pill">14–22px</span> (写真は 10–14px、ヒーローは 22px)<br/>
+        ・線: <code>#e2d6c1</code> 1px の hairline。重ねない。<br/>
+        ・影: <code>0 6px 20px rgba(74,55,35,.10)</code> など、温かみのあるブラウン投影。黒影は使わない。
+      </p>
+
+      <h3>アニメーション</h3>
+      <p>すべて 200–320ms / cubic-bezier(.2,.7,.3,1)。
+      ・タップ → 写真は 220ms で拡大しライトボックスへ shared element transition。<br/>
+      ・スクロール時、写真は <i>transform: translateY(8px) → 0</i> + opacity 0→1 の控えめなパララックス。<br/>
+      ・お気に入りハート: 一度だけ 280ms のスケールバウンス。<br/>
+      ・派手な装飾アニメは禁止。「気付かれないが、ないと寂しい」レベルに。</p>
+    </div>
+  );
+}
+
+function FunctionDecisions() {
+  return (
+    <div className="doc">
+      <h2>機能の採否 — 限定公開の現実解</h2>
+
+      <h3>ダウンロード機能</h3>
+      <p><b>採用 (条件付き)</b>。「フルサイズ即時ダウンロード」は<u>家族のみ</u>に限定し、親しい人は <i>許可された写真のみ</i> 保存可。
+      アクセス権の混在による顔写真の流出リスクを下げるため、<b>初期表示はオフ</b>。長押しメニューに格納し、UIノイズを避ける。</p>
+
+      <h3>動画掲載 — <span style={{color:'#7a4f2c'}}>本採用</span></h3>
+      <p>家族の声・足音・笑い声は写真では残せないため、限定公開の利点として動画を <b>本採用</b>。次のルールでサイトを重くしない。</p>
+      <ul>
+        <li>1本あたり <b>最大 30 秒</b>のクリップに限定 (それ以上は自動でトリミング案内)</li>
+        <li>自動再生せず、写真と同じグリッドに <span className="pill">▶</span> アイコンと尺バッジ <span className="pill">0:24</span> で並べる</li>
+        <li>ライトボックスでタップ後に再生。<b>音はデフォルト OFF</b>、再生中だけアンミュート可</li>
+        <li>サムネは静止画 + 一瞬のフェードイン (1秒以上のホバー再生は禁止)</li>
+        <li>ダウンロードは家族のみ。共有リンクは 24 時間で消える</li>
+      </ul>
+
+      <h3>顔写真ありの安心設計</h3>
+      <ul>
+        <li>合言葉ロック (招待制) — そもそも辿り着けない</li>
+        <li>OG画像にユーザー写真を出さない (リンク共有時の漏洩防止)</li>
+        <li>右クリック・スクリーンショットを技術的に止めない代わりに、各写真フッターに極小の <i>"Family only"</i> マーク</li>
+        <li>顔検索・自動タグなどの AI 機能は<b>非搭載</b>。家族の中でも誤分類は記憶を傷つける。</li>
+        <li>ダウンロードは家族(管理者)が許可した相手のみ</li>
+        <li>外部共有リンクは時限付き (24時間) でしか発行できない</li>
+      </ul>
+
+      <h3>増えても破綻しない情報設計</h3>
+      <p>第一分類「旅行先 (アルバム)」は意味のある単位なので、年に十数枚増えても破綻しない。
+      第二分類「年別」は補助タブとして常設。アルバム名は重複しても <i>「京都 — 2024冬」「京都 — 2026冬」</i> のように年を suffix。
+      ホーム最上段は <b>最新の1冊だけ</b>を主役に置き、それ以外はグリッドへ。
+      検索タブは「人物 / 風景 / 海 / 街」の意味的カテゴリを用意し、100→500 枚に増えても辿れる構造に。</p>
+
+      <h3>レスポンシブ (PC)</h3>
+      <p>
+        モバイルのレイアウト (1カラム) を中央に最大 480px で固定。<br/>
+        ・PC では左に 240px の固定サイドバー (アルバム名 / 年) を出す。<br/>
+        ・写真グリッドは 4–5 列に拡張、ライトボックスは画面の 70% 幅に。<br/>
+        ・タブバーは消し、サイドバーのナビに移譲。<br/>
+        ・タッチ最適 (44px hit) はそのまま、PC ではホバー時にメタ情報を薄く重ねる。
+      </p>
+    </div>
+  );
+}
+
+function CopyDeck() {
+  const rows = [
+    ['ヘッダー (ロック画面)', '記憶を、そっとひらく。'],
+    ['サブ (ロック)', '家族と、ほんとうに親しい人だけのための、旅と日々の写真集です。'],
+    ['ロック CTA', '合言葉でひらく'],
+    ['空状態 (アルバム)', 'まだ写真がありません。最初の一枚を添えませんか。'],
+    ['新着お知らせ', 'おかえりなさい、あやかさん。新しい写真が 12 枚 届いています。'],
+    ['ホームのセクション', '旅とできごと / 年で振り返る / お気に入り'],
+    ['アルバム CTA', 'アルバムをひらく'],
+    ['アルバム説明欄プレースホルダ', 'この旅でいちばん覚えていることを、一行どうぞ。'],
+    ['ライトボックス キャプション空', 'この一枚に、覚えていることを書き残す。'],
+    ['ダウンロード確認', 'この写真を、お使いの端末に保存します。よろしいですか?'],
+    ['ダウンロード制限', 'この写真は、家族のみ保存できます。'],
+    ['動画再生前', 'タップで再生。音はオフではじまります。'],
+    ['共有メニュー', 'リンクを送る (24時間で消えます)'],
+    ['お気に入り追加', 'お気に入りに入れました'],
+    ['お気に入り解除', 'お気に入りから外しました'],
+    ['設定 / ロック', 'いったんロックする'],
+    ['プロフィール役割', '家族 · 管理者 / 家族 / 親しい人'],
+    ['招待 CTA', 'みんなを招待する'],
+    ['招待説明', '合言葉が書かれた招待カードを、メッセージで送れます。'],
+    ['ロード中', '写真を呼び出しています…'],
+    ['通信エラー', 'うまく届きませんでした。少し待ってもう一度お試しください。'],
+    ['フッター', '— a quiet place —'],
+  ];
+  return (
+    <div className="doc">
+      <h2>UI 文言 (日本語)</h2>
+      <p className="lead">家族向けの安心感を残しつつ、上品で生活感が出すぎないトーン。「消去」「削除」など強い言葉は避け、「外す」「いったんロックする」のような穏やかな表現に。</p>
+      <table className="copy-table">
+        <tbody>
+          {rows.map(([k, v]) => (
+            <tr key={k}><td>{k}</td><td>{v}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function HandoffBrief() {
+  return (
+    <div className="doc">
+      <h2>最終デザイン指示 (制作引き渡し用)</h2>
+      <p className="lead">この一枚で、Claude Design / 制作チームがそのまま実装に入れる粒度。</p>
+      <h3>原則</h3>
+      <ul>
+        <li>スマホファースト。375–430px を主基準。タップ領域 44px 以上。</li>
+        <li>写真がいちばん大きく、UIは退く。文字色は #2a221a (深ブラウン)、純黒禁止。</li>
+        <li>余白は 22px / 14px / 6px の 3 段階。窮屈にしない。</li>
+        <li>角丸 22 (ヒーロー) / 14 (カード) / 10 (写真) / 999 (チップ)。</li>
+      </ul>
+      <h3>カラー</h3>
+      <p>tokens.css の <code>[data-theme="sand"]</code> をそのまま採用。Latte/Linen は将来の Tweak 用。</p>
+      <h3>タイポ</h3>
+      <p>Shippori Mincho 500 / Noto Sans JP 400-500 / Cormorant Garamond italic 500。フォント読み込みは <code>display=swap</code>。</p>
+      <h3>レイアウト構成</h3>
+      <ul>
+        <li>各画面: 上部 64px のセーフエリア (ステータスバー込み) → タイトル 30–36px → コンテンツ → 下部 110px の余白 (タブバー分)。</li>
+        <li>タブバーは glassmorphism (blur 18px) で写真と被っても可読。</li>
+        <li>ライトボックスは黒背景 #0e0a06 + 写真の超ぼかしを 40% 重ね、写真の存在感を奪わない。</li>
+      </ul>
+      <h3>アニメーション</h3>
+      <p>200–320ms / cubic-bezier(.2,.7,.3,1)。shared element transition と subtle parallax のみ。</p>
+      <h3>顔写真・プライバシー</h3>
+      <p>ロック必須 / OG非露出 / 招待時限リンク / AIタグ非搭載 / ダウンロードは管理者が個別許可。</p>
+      <h3>動画 / ダウンロード</h3>
+      <p>動画は最大 30 秒・音 OFF・グリッド統一。ダウンロードは長押しから「家族のみ」許可で。</p>
+      <h3>増えても破綻しない</h3>
+      <p>アルバム = 旅行先別 (一次)、年別 = 補助タブ (二次)。同名アルバムは年を suffix。100→500 枚を想定し検索カテゴリを用意。</p>
+      <h3>PC レスポンシブ</h3>
+      <p>左 240px サイドバー + 中央 4-5 列グリッド + 右 360px のライトボックスパネル。タブバーはサイドバーへ昇格。</p>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Canvas
+   ───────────────────────────────────────────────────────────── */
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="00-concept" title="00. コンセプト & 設計指示書"
+        subtitle="まずはここから。考え方とトーンの全体像。">
+        <DCArtboard id="concept" label="Concept · 全体像" width={780} height={840}>
+          <Concept/>
+        </DCArtboard>
+        <DCArtboard id="palette" label="配色 · 3案比較" width={780} height={840}>
+          <Palettes/>
+        </DCArtboard>
+        <DCArtboard id="type" label="タイポ・余白・モーション" width={780} height={760}>
+          <TypeAndSpace/>
+        </DCArtboard>
+        <DCArtboard id="decision" label="機能の採否・情報設計" width={780} height={900}>
+          <FunctionDecisions/>
+        </DCArtboard>
+        <DCArtboard id="copy" label="UI 文言 (日本語)" width={780} height={900}>
+          <CopyDeck/>
+        </DCArtboard>
+        <DCArtboard id="handoff" label="最終デザイン指示書" width={780} height={780}>
+          <HandoffBrief/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="10-entrance" title="01. 入口 (ロック)"
+        subtitle="家族・親しい人だけ。第一印象で「私的な場所」を伝える。">
+        <DCArtboard id="onboarding" label="ロック / Onboarding" width={PHONE_W + 60} height={PHONE_H + 80}>
+          <Frame><Phone label="Memoria · ロック画面"><ScreenOnboarding/></Phone></Frame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="20-home" title="02. ホーム / アルバム一覧"
+        subtitle="最新を主役に。アルバムは2列、年別は横スクロールで補助。">
+        <DCArtboard id="home" label="ホーム · 推奨案" width={PHONE_W + 60} height={PHONE_H + 80}>
+          <Frame><Phone label="ホーム — グリッド + 最新ヒーロー"><ScreenHome/></Phone></Frame>
+        </DCArtboard>
+        <DCArtboard id="albums-list" label="アルバム · リスト案" width={PHONE_W + 60} height={PHONE_H + 80}>
+          <Frame><Phone label="アルバム一覧 — リスト形式"><ScreenAlbumsList/></Phone></Frame>
+        </DCArtboard>
+        <DCArtboard id="years" label="年別ビュー" width={PHONE_W + 60} height={PHONE_H + 80}>
+          <Frame><Phone label="年別 — 補助タブ"><ScreenYears/></Phone></Frame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="30-album" title="03. アルバム詳細"
+        subtitle="旅行=一冊の写真集。ヒーロー → 日付グループ → 2列写真。">
+        <DCArtboard id="album" label="アルバム詳細 · 沖縄" width={PHONE_W + 60} height={PHONE_H + 80}>
+          <Frame><Phone label="アルバム詳細 — 沖縄、家族旅行"><ScreenAlbum albumId="okinawa"/></Phone></Frame>
+        </DCArtboard>
+        <DCArtboard id="album-paris" label="アルバム詳細 · パリ" width={PHONE_W + 60} height={PHONE_H + 80}>
+          <Frame><Phone label="アルバム詳細 — パリの十日間"><ScreenAlbum albumId="paris"/></Phone></Frame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="40-lightbox" title="04. ライトボックス (写真 / 動画)"
+        subtitle="写真も動画も主役。UIは退いて、必要な情報だけグラスで重ねる。">
+        <DCArtboard id="lightbox" label="写真ライトボックス" width={PHONE_W + 60} height={PHONE_H + 80}>
+          <Frame><Phone label="写真の拡大表示" statusDark><ScreenLightbox albumId="kyoto" index={2}/></Phone></Frame>
+        </DCArtboard>
+        <DCArtboard id="video-lightbox" label="動画ライトボックス" width={PHONE_W + 60} height={PHONE_H + 80}>
+          <Frame><Phone label="動画の拡大表示 — 再生前" statusDark><ScreenVideoLightbox albumId="okinawa" index={5}/></Phone></Frame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="50-utility" title="05. さがす・設定"
+        subtitle="100→500枚に増えても辿れる構造と、家族向けプライバシー設定。">
+        <DCArtboard id="search" label="さがす" width={PHONE_W + 60} height={PHONE_H + 80}>
+          <Frame><Phone label="さがす — 全写真への入口"><ScreenSearch/></Phone></Frame>
+        </DCArtboard>
+        <DCArtboard id="profile" label="設定 / プロフィール" width={PHONE_W + 60} height={PHONE_H + 80}>
+          <Frame><Phone label="設定 — 合言葉・招待・画質"><ScreenProfile/></Phone></Frame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="60-themes" title="06. 配色 — Sand 確定 (参考: Latte / Linen)"
+        subtitle="本案は Sand。Latte / Linen は将来の Tweak 用に保管。">
+        <DCArtboard id="t-sand" label="A · Sand ✓ 確定" width={PHONE_W + 60} height={PHONE_H + 80}>
+          <Frame theme="sand"><Phone label="Sand — 確定案"><ScreenHome/></Phone></Frame>
+        </DCArtboard>
+        <DCArtboard id="t-latte" label="B · Latte (参考)" width={PHONE_W + 60} height={PHONE_H + 80}>
+          <Frame theme="latte"><Phone label="Latte — 参考"><ScreenHome/></Phone></Frame>
+        </DCArtboard>
+        <DCArtboard id="t-linen" label="C · Linen (参考)" width={PHONE_W + 60} height={PHONE_H + 80}>
+          <Frame theme="linen"><Phone label="Linen — 参考"><ScreenHome/></Phone></Frame>
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
