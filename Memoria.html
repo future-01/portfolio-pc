@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="sand">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <title>Memoria — 家族の写真集</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Noto+Sans+JP:wght@400;500&family=Shippori+Mincho:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ─────────────────────────────────────────────────────
+       Memoria — Sand palette tokens
+    ───────────────────────────────────────────────────── */
+    :root, [data-theme="sand"] {
+      --bg:        #f5efe6;
+      --bg-elev:   #fbf7f0;
+      --bg-soft:   #ece4d4;
+      --line:      #e2d6c1;
+      --line-strong:#cbb89a;
+      --ink:       #2a221a;
+      --ink-2:     #5b4d3d;
+      --ink-3:     #8a7964;
+      --accent:    #7a4f2c;
+      --accent-soft:#b88a5e;
+      --gold:      #b89265;
+      --shadow-1:  0 1px 2px rgba(74,55,35,.06), 0 2px 8px rgba(74,55,35,.05);
+      --shadow-2:  0 6px 20px rgba(74,55,35,.10), 0 2px 6px rgba(74,55,35,.06);
+      --shadow-overlay: 0 12px 40px rgba(20,14,8,.45);
+      --font-display: 'Cormorant Garamond', 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
+      --font-serif:   'Shippori Mincho', 'Hiragino Mincho ProN', 'YuMincho', serif;
+      --font-sans:    'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #ddd3c4; }
+    body {
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      color: var(--ink);
+      overflow: hidden;
+    }
+    #root { height: 100%; }
+    input { font-family: inherit; font-size: inherit; }
+    ::-webkit-scrollbar { display: none; }
+    * { scrollbar-width: none; }
+    ::selection { background: var(--accent-soft); color: #fff; }
+
+    .phone-screen {
+      font-family: var(--font-sans);
+      color: var(--ink);
+      background: var(--bg);
+      font-feature-settings: "palt";
+      letter-spacing: .01em;
+      box-shadow: 0 30px 80px rgba(40,28,18,.35), 0 8px 24px rgba(40,28,18,.20);
+    }
+
+    .tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: 999px;
+      font-size: 11px; letter-spacing: .08em;
+      background: rgba(184,146,101,.12);
+      color: var(--accent);
+      border: 1px solid rgba(184,146,101,.25);
+    }
+    .tag-dark {
+      background: rgba(255,255,255,.14);
+      color: rgba(255,255,255,.92);
+      border-color: rgba(255,255,255,.22);
+    }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      height: 36px; padding: 0 14px; border-radius: 999px;
+      background: var(--bg-elev); border: 1px solid var(--line);
+      color: var(--ink-2); font-size: 13px;
+      white-space: nowrap; cursor: pointer;
+    }
+    .chip.is-active { background: var(--ink); color: var(--bg-elev); border-color: var(--ink); }
+    .tap { min-width: 44px; min-height: 44px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+    .tap:active { opacity: .7; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .screen-enter { animation: fadeIn 240ms cubic-bezier(.2,.7,.3,1) both; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.7/babel.min.js"></script>
+
+  <script type="text/babel" data-presets="react">
+// ─────────────────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────────────────
+const ALBUMS = [
+  { id:'kyoto',    title:'京都の冬',           subtitle:'Kyoto, Japan',   date:'2026.01', year:2026, count:18, cover:'kyoto-3',    desc:'雪のちらつく朝、祖父の手を引いて歩いた石畳。' },
+  { id:'okinawa',  title:'沖縄、家族旅行',     subtitle:'Okinawa, Japan', date:'2025.08', year:2025, count:22, cover:'okinawa-2',  desc:'海の音と笑い声しか聞こえなかった四日間。' },
+  { id:'family',   title:'おばあちゃんの誕生日', subtitle:'Home, Tokyo',  date:'2025.05', year:2025, count:14, cover:'family-1',   desc:'七十五本のろうそく、みんなで吹き消した。' },
+  { id:'hokkaido', title:'北海道、雪の朝',      subtitle:'Hokkaido, Japan', date:'2025.02', year:2025, count:16, cover:'hokkaido-1', desc:'銀世界。湯気と、白い息と、やわらかい光。' },
+  { id:'paris',    title:'パリの十日間',        subtitle:'Paris, France',  date:'2024.10', year:2024, count:24, cover:'paris-1',    desc:'古い石と、新しい空。歩き疲れたら珈琲を。' },
+  { id:'hawaii',   title:'ハワイの夏',          subtitle:'Honolulu, USA',  date:'2024.07', year:2024, count:19, cover:'hawaii-2',   desc:'潮風、日焼け、夜のフラ。' },
+  { id:'daily',    title:'日々のかけら',        subtitle:'Around Tokyo',   date:'通年',    year:2025, count:12, cover:'daily-1',    desc:'何でもない日のごちそう。' },
+];
+
+function buildPhotos(album) {
+  const out = [];
+  const days = ['01','02','03','04','05'];
+  for (let i = 0; i < album.count; i++) {
+    const slot = (i % 6) + 1;
+    const day = days[i % days.length];
+    out.push({
+      id:    `${album.id}-${i+1}`,
+      thumb: `project/placeholders/${album.id}-${slot}.svg`,
+      full:  `project/placeholders/${album.id}-${slot}-lg.svg`,
+      date:  `${album.date.replace('通年','2025.06')}.${day}`,
+      caption: i === 0 ? album.desc : '',
+    });
+  }
+  return out;
+}
+
+const PHOTOS = {};
+ALBUMS.forEach(a => { PHOTOS[a.id] = buildPhotos(a); });
+const TOTAL_PHOTOS = ALBUMS.reduce((s, a) => s + a.count, 0);
+
+// ─────────────────────────────────────────────────────────
+// ICONS
+// ─────────────────────────────────────────────────────────
+const Icon = {
+  Search:   (p) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" {...p}><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.6"/><path d="m20 20-3.5-3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
+  Heart:    (p) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" {...p}><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/></svg>,
+  Lock:     (p) => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" {...p}><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" strokeWidth="1.6"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" strokeWidth="1.6"/></svg>,
+  Grid:     (p) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" {...p}><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6"/><rect x="13" y="4" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6"/><rect x="4" y="13" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6"/><rect x="13" y="13" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6"/></svg>,
+  Calendar: (p) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" {...p}><rect x="4" y="6" width="16" height="14" rx="2" stroke="currentColor" strokeWidth="1.6"/><path d="M4 10h16M9 4v3M15 4v3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
+  User:     (p) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" {...p}><circle cx="12" cy="9" r="3.5" stroke="currentColor" strokeWidth="1.6"/><path d="M5 20c1-3.5 4-5 7-5s6 1.5 7 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
+  ChevR:    (p) => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" {...p}><path d="m9 6 6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  ChevL:    (p) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" {...p}><path d="m15 6-6 6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  Close:    (p) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" {...p}><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
+  Down:     (p) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" {...p}><path d="M12 4v12m0 0-5-5m5 5 5-5M5 20h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  Share:    (p) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" {...p}><path d="M12 4v12m0-12-4 4m4-4 4 4M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  More:     (p) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" {...p}><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg>,
+  Info:     (p) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" {...p}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
+  Pin:      (p) => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" {...p}><path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" stroke="currentColor" strokeWidth="1.6"/><circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.6"/></svg>,
+  Sparkle:  (p) => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" {...p}><path d="M12 3v6M12 15v6M3 12h6M15 12h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
+};
+
+// ─────────────────────────────────────────────────────────
+// SHARED COMPONENTS
+// ─────────────────────────────────────────────────────────
+function RoundBtn({ children, dark = false, onClick }) {
+  return (
+    <div className="tap" onClick={onClick} style={{
+      width: 40, height: 40, borderRadius: 999,
+      background: dark ? 'rgba(255,255,255,.14)' : 'rgba(255,255,255,.7)',
+      border: dark ? '1px solid rgba(255,255,255,.18)' : '1px solid var(--line)',
+      backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      color: dark ? '#fff' : 'var(--ink)',
+    }}>{children}</div>
+  );
+}
+
+function TabBar({ active = 'home', go, dark = false }) {
+  const items = [
+    { id: 'home',    label: 'アルバム', icon: Icon.Grid },
+    { id: 'years',   label: '年別',     icon: Icon.Calendar },
+    { id: 'search',  label: 'さがす',   icon: Icon.Search },
+    { id: 'profile', label: '設定',     icon: Icon.User },
+  ];
+  return (
+    <div style={{
+      position: 'absolute', left: 12, right: 12, bottom: 22,
+      height: 64, borderRadius: 22,
+      background: dark ? 'rgba(28,22,16,.78)' : 'rgba(251,247,240,.85)',
+      backdropFilter: 'blur(18px) saturate(160%)',
+      WebkitBackdropFilter: 'blur(18px) saturate(160%)',
+      border: dark ? '1px solid rgba(255,255,255,.08)' : '1px solid rgba(184,146,101,.18)',
+      boxShadow: dark ? '0 8px 24px rgba(0,0,0,.4)' : '0 6px 20px rgba(74,55,35,.10)',
+      display: 'flex', alignItems: 'center', justifyContent: 'space-around',
+      zIndex: 40, padding: '0 8px',
+    }}>
+      {items.map(it => {
+        const C = it.icon;
+        const isOn = it.id === active;
+        return (
+          <div key={it.id} className="tap" onClick={() => go && go(it.id)} style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+            color: isOn ? (dark ? '#f5e6cd' : 'var(--accent)') : (dark ? 'rgba(255,255,255,.55)' : 'var(--ink-3)'),
+            padding: '6px 12px', borderRadius: 14,
+            background: isOn ? (dark ? 'rgba(245,230,205,.10)' : 'rgba(184,146,101,.10)') : 'transparent',
+          }}>
+            <C/>
+            <span style={{ fontSize: 10.5, fontWeight: 500, letterSpacing: '.04em' }}>{it.label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────
+// LOCK SCREEN
+// ─────────────────────────────────────────────────────────
+function ScreenLock({ go }) {
+  return (
+    <div className="screen-enter" style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0,
+        background: 'url(project/placeholders/family-1-lg.svg) center/cover',
+        filter: 'blur(10px) saturate(.85)', transform: 'scale(1.15)' }}/>
+      <div style={{ position: 'absolute', inset: 0, background:
+        'linear-gradient(180deg, rgba(40,28,18,.40) 0%, rgba(40,28,18,.65) 60%, rgba(30,20,12,.92) 100%)' }}/>
+
+      <div style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column',
+        padding: '110px 32px 60px', color: '#fff' }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '6px 12px', borderRadius: 999,
+            background: 'rgba(255,255,255,.14)', border: '1px solid rgba(255,255,255,.22)',
+            backdropFilter: 'blur(10px)', fontSize: 10.5, letterSpacing: '.18em', textTransform: 'uppercase',
+            color: 'rgba(255,255,255,.92)', marginBottom: 32 }}>
+            <Icon.Lock/> Family Only · 限定公開
+          </div>
+          <div style={{
+            fontFamily: "'Shippori Mincho','Hiragino Mincho ProN',serif",
+            fontSize: 50, lineHeight: 1.08, fontWeight: 500, marginBottom: 14, letterSpacing: '.01em',
+          }}>
+            記憶を、<br/>
+            そっと<br/>
+            ひらく。
+          </div>
+          <div style={{ fontFamily: "'Cormorant Garamond',serif",
+            fontStyle: 'italic', fontSize: 22, opacity: .8, marginBottom: 28, letterSpacing: '.03em' }}>
+            Memoria — a private archive
+          </div>
+          <div style={{ fontSize: 13.5, lineHeight: 1.85, color: 'rgba(255,255,255,.78)', maxWidth: 280 }}>
+            家族と、ほんとうに親しい人だけのための、<br/>
+            旅と日々の写真集です。
+          </div>
+        </div>
+
+        <div>
+          <div className="tap" onClick={() => go('home')} style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px',
+            background: 'rgba(255,255,255,.92)', borderRadius: 14, marginBottom: 12,
+            color: 'var(--ink)' }}>
+            <div style={{ width: 36, height: 36, borderRadius: 12, background: 'var(--bg-soft)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
+              <Icon.User/>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, color: 'var(--ink-3)', letterSpacing: '.06em' }}>合言葉でひらく</div>
+              <div style={{ fontSize: 14, fontWeight: 500 }}>·  ·  ·  ·  ·  ·</div>
+            </div>
+            <Icon.ChevR style={{ color: 'var(--ink-3)' }}/>
+          </div>
+          <div style={{ textAlign: 'center', fontSize: 12, color: 'rgba(255,255,255,.6)', letterSpacing: '.05em' }}>
+            招待された方のみ閲覧できます
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────
+// HOME SCREEN
+// ─────────────────────────────────────────────────────────
+function AlbumCard({ album, go }) {
+  return (
+    <div className="tap" onClick={() => go('album', { albumId: album.id })}
+      style={{ borderRadius: 16, overflow: 'hidden', background: 'var(--bg-elev)',
+        border: '1px solid var(--line)', boxShadow: 'var(--shadow-1)' }}>
+      <div style={{ position: 'relative', aspectRatio: '4 / 5',
+        background: `url(project/placeholders/${album.cover}-lg.svg) center/cover` }}>
+        <div style={{ position: 'absolute', top: 8, right: 8,
+          padding: '3px 8px', borderRadius: 999, fontSize: 10, letterSpacing: '.04em',
+          background: 'rgba(255,255,255,.85)', color: 'var(--ink-2)', backdropFilter: 'blur(6px)' }}>
+          {album.count}
+        </div>
+      </div>
+      <div style={{ padding: '10px 12px 12px' }}>
+        <div style={{ fontSize: 10, letterSpacing: '.14em', textTransform: 'uppercase',
+          color: 'var(--ink-3)', marginBottom: 2 }}>{album.date}</div>
+        <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 14.5, fontWeight: 500,
+          color: 'var(--ink)', lineHeight: 1.3 }}>{album.title}</div>
+      </div>
+    </div>
+  );
+}
+
+function ScreenHome({ go }) {
+  const featured = ALBUMS[0];
+  const others = ALBUMS.slice(1, 5);
+
+  return (
+    <div className="screen-enter" style={{ height: '100%', overflow: 'hidden', position: 'relative', background: 'var(--bg)' }}>
+      <div style={{ height: '100%', overflow: 'auto', paddingBottom: 110 }}>
+        <div style={{ padding: '64px 22px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontSize: 10.5, letterSpacing: '.22em', textTransform: 'uppercase',
+              color: 'var(--ink-3)', marginBottom: 4 }}>Family Archive</div>
+            <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 30, fontWeight: 500,
+              letterSpacing: '.01em', color: 'var(--ink)' }}>記憶 <span style={{
+                fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic', fontSize: 26,
+                color: 'var(--accent)', marginLeft: 4 }}>Memoria</span></div>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <RoundBtn onClick={() => go('search')}><Icon.Search/></RoundBtn>
+          </div>
+        </div>
+
+        <div style={{ padding: '4px 22px 20px', fontSize: 13, color: 'var(--ink-2)', letterSpacing: '.04em' }}>
+          おかえりなさい、<span style={{ color: 'var(--accent)' }}>みらいさん</span>。<br/>
+          <span style={{ color: 'var(--ink-3)' }}>新しい写真が <b style={{ color: 'var(--ink)' }}>12枚</b> 届いています。</span>
+        </div>
+
+        <div style={{ padding: '0 18px 22px' }}>
+          <div className="tap" onClick={() => go('album', { albumId: featured.id })}
+            style={{ position: 'relative', borderRadius: 22, overflow: 'hidden',
+              aspectRatio: '4 / 5',
+              background: `url(project/placeholders/${featured.cover}-lg.svg) center/cover`,
+              boxShadow: 'var(--shadow-2)' }}>
+            <div style={{ position: 'absolute', inset: 0,
+              background: 'linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(20,12,6,.65) 100%)' }}/>
+            <div style={{ position: 'absolute', top: 14, left: 14 }}>
+              <span className="tag tag-dark">最新</span>
+            </div>
+            <div style={{ position: 'absolute', left: 18, right: 18, bottom: 18, color: '#fff' }}>
+              <div style={{ fontSize: 11, letterSpacing: '.18em', opacity: .85, marginBottom: 6 }}>
+                {featured.subtitle.toUpperCase()} · {featured.date}
+              </div>
+              <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 26, fontWeight: 500,
+                lineHeight: 1.2, marginBottom: 6 }}>{featured.title}</div>
+              <div style={{ fontSize: 12.5, opacity: .85, lineHeight: 1.6 }}>{featured.desc}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10,
+                fontSize: 11.5, opacity: .8 }}>
+                <Icon.Pin/> {featured.subtitle.split(',')[0]} · {featured.count}枚
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ padding: '0 22px 14px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontSize: 10.5, letterSpacing: '.22em', textTransform: 'uppercase',
+              color: 'var(--ink-3)', marginBottom: 2 }}>Albums</div>
+            <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 19, fontWeight: 500,
+              color: 'var(--ink)' }}>旅とできごと</div>
+          </div>
+          <div className="tap" onClick={() => go('albums-list')}
+            style={{ fontSize: 12, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: 2 }}>
+            すべて <Icon.ChevR/>
+          </div>
+        </div>
+
+        <div style={{ padding: '0 18px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          {others.map(a => <AlbumCard key={a.id} album={a} go={go}/>)}
+        </div>
+
+        <div style={{ padding: '28px 22px 12px' }}>
+          <div style={{ fontSize: 10.5, letterSpacing: '.22em', textTransform: 'uppercase',
+            color: 'var(--ink-3)', marginBottom: 2 }}>By Year</div>
+          <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 19, fontWeight: 500,
+            color: 'var(--ink)' }}>年で振り返る</div>
+        </div>
+        <div style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '4px 18px 4px' }}>
+          {[2026, 2025, 2024, 2023].map((y, i) => {
+            const aid = ['kyoto', 'okinawa', 'paris', 'hawaii'][i];
+            const a = ALBUMS.find(x => x.id === aid);
+            return (
+              <div key={y} className="tap" onClick={() => go('years')} style={{
+                minWidth: 116, height: 142, borderRadius: 16, position: 'relative', overflow: 'hidden',
+                background: `url(project/placeholders/${a.cover}-lg.svg) center/cover`,
+                boxShadow: 'var(--shadow-1)', flexShrink: 0,
+              }}>
+                <div style={{ position: 'absolute', inset: 0,
+                  background: 'linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(20,12,6,.7) 100%)' }}/>
+                <div style={{ position: 'absolute', left: 10, bottom: 10, color: '#fff' }}>
+                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 26, lineHeight: 1, fontWeight: 500 }}>{y}</div>
+                  <div style={{ fontSize: 10.5, opacity: .85, marginTop: 2 }}>
+                    {[3, 4, 2, 1][i]}冊 · {[42, 56, 24, 8][i]}枚
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ padding: '32px 22px 12px', textAlign: 'center', fontSize: 11,
+          color: 'var(--ink-3)', letterSpacing: '.08em' }}>
+          <div style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic',
+            fontSize: 13, marginBottom: 4 }}>— a quiet place —</div>
+          全 {TOTAL_PHOTOS} 枚 · 7 アルバム
+        </div>
+      </div>
+      <TabBar active="home" go={go}/>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────
+// ALBUMS LIST
+// ─────────────────────────────────────────────────────────
+function ScreenAlbumsList({ go }) {
+  return (
+    <div className="screen-enter" style={{ height: '100%', overflow: 'hidden', position: 'relative', background: 'var(--bg)' }}>
+      <div style={{ height: '100%', overflow: 'auto', paddingBottom: 110 }}>
+        <div style={{ padding: '64px 22px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <RoundBtn onClick={() => go('home')}><Icon.ChevL/></RoundBtn>
+            <div>
+              <div style={{ fontSize: 10.5, letterSpacing: '.22em', textTransform: 'uppercase',
+                color: 'var(--ink-3)', marginBottom: 4 }}>Albums</div>
+              <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 26, fontWeight: 500,
+                color: 'var(--ink)' }}>アルバム</div>
+            </div>
+          </div>
+          <RoundBtn><Icon.Grid/></RoundBtn>
+        </div>
+
+        <div style={{ display: 'flex', gap: 6, padding: '0 18px 18px', overflowX: 'auto' }}>
+          {['新しい順','古い順','旅行先','枚数順'].map((t, i) => (
+            <div key={t} className={'chip' + (i === 0 ? ' is-active' : '')}>{t}</div>
+          ))}
+        </div>
+
+        <div style={{ padding: '0 18px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {ALBUMS.map(a => (
+            <div key={a.id} className="tap" onClick={() => go('album', { albumId: a.id })}
+              style={{ display: 'flex', gap: 14, alignItems: 'stretch',
+                background: 'var(--bg-elev)', border: '1px solid var(--line)',
+                borderRadius: 16, padding: 10, boxShadow: 'var(--shadow-1)' }}>
+              <div style={{ width: 96, height: 120, borderRadius: 10, flexShrink: 0,
+                background: `url(project/placeholders/${a.cover}-lg.svg) center/cover` }}/>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '4px 4px 4px 0', minWidth: 0 }}>
+                <div style={{ fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase',
+                  color: 'var(--ink-3)', marginBottom: 4 }}>{a.subtitle} · {a.date}</div>
+                <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 17, fontWeight: 500,
+                  color: 'var(--ink)', marginBottom: 6, lineHeight: 1.25 }}>{a.title}</div>
+                <div style={{ fontSize: 11.5, color: 'var(--ink-2)', lineHeight: 1.55,
+                  display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.desc}</div>
+                <div style={{ flex: 1 }}/>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>{a.count}枚</span>
+                  <Icon.ChevR style={{ color: 'var(--ink-3)' }}/>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <TabBar active="home" go={go}/>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────
+// ALBUM DETAIL
+// ─────────────────────────────────────────────────────────
+function DateGroup({ photos, date, albumId, go }) {
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <div style={{ padding: '4px 22px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ width: 6, height: 6, borderRadius: 99, background: 'var(--accent)', flexShrink: 0 }}/>
+        <span style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic',
+          fontSize: 16, color: 'var(--ink-2)', letterSpacing: '.04em' }}>{date}</span>
+        <span style={{ flex: 1, height: 1, background: 'var(--line)' }}/>
+      </div>
+      <div style={{ padding: '0 14px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+        {photos.map((p, i) => {
+          const span = i === 0 ? '1 / -1' : 'auto';
+          const ratio = i === 0 ? '4 / 3' : '1 / 1';
+          const isVideo = i === 2 || i === 5;
+          return (
+            <div key={p.id} className="tap"
+              onClick={() => go(isVideo ? 'video-lightbox' : 'lightbox', { albumId, photoIndex: p.globalIndex })}
+              style={{ gridColumn: span, position: 'relative',
+                aspectRatio: ratio, borderRadius: 10, overflow: 'hidden',
+                background: `url(${p.thumb}) center/cover`, boxShadow: 'var(--shadow-1)' }}>
+              {i === 0 && (
+                <div style={{ position: 'absolute', left: 10, bottom: 8, fontSize: 10,
+                  color: '#fff', letterSpacing: '.06em',
+                  textShadow: '0 1px 6px rgba(0,0,0,.5)' }}>{p.date}</div>
+              )}
+              {isVideo && (
+                <React.Fragment>
+                  <div style={{ position: 'absolute', inset: 0,
+                    background: 'linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,.35) 100%)' }}/>
+                  <div style={{ position: 'absolute', top: '50%', left: '50%',
+                    transform: 'translate(-50%,-50%)', width: 38, height: 38, borderRadius: 999,
+                    background: 'rgba(255,255,255,.88)', backdropFilter: 'blur(8px)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 4px 12px rgba(0,0,0,.25)' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="#2a221a"/></svg>
+                  </div>
+                  <div style={{ position: 'absolute', right: 6, bottom: 6, fontSize: 9,
+                    color: '#fff', padding: '2px 6px', borderRadius: 4,
+                    background: 'rgba(20,12,6,.6)', backdropFilter: 'blur(4px)',
+                    fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic', letterSpacing: '.04em' }}>
+                    {i === 2 ? '0:18' : '0:24'}
+                  </div>
+                </React.Fragment>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ScreenAlbum({ albumId = 'okinawa', go }) {
+  const album = ALBUMS.find(a => a.id === albumId);
+  const photos = PHOTOS[albumId];
+  const tagged = photos.map((p, idx) => ({ ...p, globalIndex: idx }));
+  const datePrefix = album.date.replace('通年', '2025.06');
+  const groups = [
+    { date: `${datePrefix}.10 (日)`, items: tagged.slice(0, 8) },
+    { date: `${datePrefix}.11 (月)`, items: tagged.slice(8, 16) },
+    { date: `${datePrefix}.12 (火)`, items: tagged.slice(16) },
+  ].filter(g => g.items.length > 0);
+
+  return (
+    <div className="screen-enter" style={{ height: '100%', overflow: 'hidden', position: 'relative', background: 'var(--bg)' }}>
+      <div style={{ height: '100%', overflow: 'auto', paddingBottom: 110 }}>
+        <div style={{ position: 'relative', height: 360,
+          background: `url(project/placeholders/${album.cover}-lg.svg) center/cover` }}>
+          <div style={{ position: 'absolute', inset: 0,
+            background: 'linear-gradient(180deg, rgba(20,12,6,.35) 0%, rgba(20,12,6,0) 35%, rgba(20,12,6,0) 60%, rgba(245,239,230,1) 100%)' }}/>
+
+          <div style={{ position: 'absolute', top: 60, left: 14, right: 14,
+            display: 'flex', justifyContent: 'space-between' }}>
+            <RoundBtn dark onClick={() => go('home')}><Icon.ChevL/></RoundBtn>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <RoundBtn dark><Icon.Share/></RoundBtn>
+              <RoundBtn dark><Icon.More/></RoundBtn>
+            </div>
+          </div>
+
+          <div style={{ position: 'absolute', left: 22, right: 22, bottom: 28, color: '#fff' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5,
+              fontSize: 10.5, letterSpacing: '.18em', textTransform: 'uppercase',
+              opacity: .9, marginBottom: 6 }}>
+              <Icon.Pin/> {album.subtitle}
+            </div>
+            <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 32, fontWeight: 500,
+              lineHeight: 1.18, marginBottom: 8 }}>{album.title}</div>
+            <div style={{ fontSize: 12.5, opacity: .9, lineHeight: 1.6, maxWidth: 280 }}>{album.desc}</div>
+          </div>
+        </div>
+
+        <div style={{ padding: '6px 22px 16px', display: 'flex', alignItems: 'center', gap: 14,
+          fontSize: 11.5, color: 'var(--ink-2)', letterSpacing: '.05em' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <Icon.Calendar/> {album.date}
+          </span>
+          <span style={{ width: 1, height: 12, background: 'var(--line-strong)' }}/>
+          <span>{album.count}枚の写真</span>
+          <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4,
+            color: 'var(--accent)' }}>
+            <Icon.Heart/> 12
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', gap: 6, padding: '0 18px 14px', overflowX: 'auto' }}>
+          {['すべて','風景','人物','ハイライト'].map((t, i) => (
+            <div key={t} className={'chip' + (i === 0 ? ' is-active' : '')}>{t}</div>
+          ))}
+        </div>
+
+        {groups.map(g => (
+          <DateGroup key={g.date} date={g.date} photos={g.items} albumId={albumId} go={go}/>
+        ))}
+      </div>
+      <TabBar active="home" go={go}/>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────
+// LIGHTBOX (photo)
+// ─────────────────────────────────────────────────────────
+function ScreenLightbox({ albumId = 'kyoto', photoIndex = 2, go }) {
+  const album = ALBUMS.find(a => a.id === albumId);
+  const photos = PHOTOS[albumId];
+  const [idx, setIdx] = React.useState(photoIndex);
+  const photo = photos[idx];
+
+  return (
+    <div className="screen-enter" style={{ height: '100%', position: 'relative', background: '#0e0a06', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0,
+        background: `url(${photo.full}) center/cover`, filter: 'blur(40px) saturate(.7)', opacity: .4 }}/>
+
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '110px 16px 230px' }}>
+        <div style={{ width: '100%', aspectRatio: '3 / 4', borderRadius: 14,
+          background: `url(${photo.full}) center/cover`,
+          boxShadow: '0 20px 60px rgba(0,0,0,.5), 0 4px 14px rgba(0,0,0,.4)' }}/>
+      </div>
+
+      <div style={{ position: 'absolute', top: 60, left: 14, right: 14,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 10 }}>
+        <RoundBtn dark onClick={() => go('album', { albumId })}><Icon.Close/></RoundBtn>
+        <div style={{ textAlign: 'center', color: '#fff' }}>
+          <div style={{ fontSize: 10.5, letterSpacing: '.18em', opacity: .7, textTransform: 'uppercase' }}>{album.subtitle}</div>
+          <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 14, fontWeight: 500, marginTop: 2 }}>{album.title}</div>
+        </div>
+        <RoundBtn dark><Icon.More/></RoundBtn>
+      </div>
+
+      <div style={{ position: 'absolute', top: 118, left: 0, right: 0, textAlign: 'center',
+        zIndex: 10, fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic',
+        fontSize: 13, color: 'rgba(255,255,255,.65)', letterSpacing: '.1em' }}>
+        {String(idx+1).padStart(2,'0')} / {String(album.count).padStart(2,'0')}
+      </div>
+
+      {idx > 0 && (
+        <div className="tap" onClick={() => setIdx(i => i - 1)}
+          style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
+            zIndex: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <RoundBtn dark><Icon.ChevL/></RoundBtn>
+        </div>
+      )}
+      {idx < photos.length - 1 && (
+        <div className="tap" onClick={() => setIdx(i => i + 1)}
+          style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+            zIndex: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <RoundBtn dark><Icon.ChevR/></RoundBtn>
+        </div>
+      )}
+
+      <div style={{ position: 'absolute', left: 14, right: 14, bottom: 28, zIndex: 10 }}>
+        <div style={{
+          background: 'rgba(20,14,8,.55)',
+          border: '1px solid rgba(255,255,255,.1)',
+          backdropFilter: 'blur(20px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+          borderRadius: 18, padding: '14px 16px', color: '#fff',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ fontSize: 12, opacity: .85, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Icon.Calendar/> {photo.date}
+            </div>
+            <div style={{ fontSize: 11, opacity: .6 }}>FUJIFILM · ƒ/2.8</div>
+          </div>
+          <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 14.5, lineHeight: 1.55 }}>
+            {photo.caption || album.desc}
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: 14,
+          padding: '8px 4px', color: '#fff' }}>
+          {[
+            { icon: <Icon.Heart/>, label: 'お気に入り' },
+            { icon: <Icon.Down/>,  label: '保存' },
+            { icon: <Icon.Share/>, label: '共有' },
+            { icon: <Icon.Info/>,  label: '詳細' },
+          ].map(a => (
+            <div key={a.label} className="tap" style={{ display: 'flex', flexDirection: 'column',
+              alignItems: 'center', gap: 4, opacity: .92 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 999,
+                background: 'rgba(255,255,255,.10)', border: '1px solid rgba(255,255,255,.18)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{a.icon}</div>
+              <span style={{ fontSize: 10.5, letterSpacing: '.05em', opacity: .85 }}>{a.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────
+// VIDEO LIGHTBOX
+// ─────────────────────────────────────────────────────────
+function ScreenVideoLightbox({ albumId = 'okinawa', photoIndex = 5, go }) {
+  const album = ALBUMS.find(a => a.id === albumId);
+  const photo = PHOTOS[albumId][photoIndex];
+
+  return (
+    <div className="screen-enter" style={{ height: '100%', position: 'relative', background: '#0a0703', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0,
+        background: `url(${photo.full}) center/cover`, filter: 'blur(40px) saturate(.7)', opacity: .35 }}/>
+
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '110px 16px 240px' }}>
+        <div style={{ position: 'relative', width: '100%', aspectRatio: '3 / 4', borderRadius: 14,
+          background: `url(${photo.full}) center/cover`,
+          boxShadow: '0 20px 60px rgba(0,0,0,.5), 0 4px 14px rgba(0,0,0,.4)', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+            width: 76, height: 76, borderRadius: 999,
+            background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(10px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 8px 28px rgba(0,0,0,.4)' }}>
+            <svg width="28" height="28" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="#2a221a"/></svg>
+          </div>
+          <div style={{ position: 'absolute', left: 0, right: 0, top: 'calc(50% + 52px)',
+            textAlign: 'center', color: '#fff', fontSize: 11, letterSpacing: '.1em',
+            textShadow: '0 1px 6px rgba(0,0,0,.5)' }}>
+            タップで再生 · 音はオフではじまります
+          </div>
+          <div style={{ position: 'absolute', top: 12, right: 12,
+            padding: '4px 10px', borderRadius: 999,
+            background: 'rgba(20,12,6,.65)', backdropFilter: 'blur(8px)',
+            color: '#fff', fontSize: 11, letterSpacing: '.05em',
+            fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic',
+            display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ width: 6, height: 6, borderRadius: 99, background: '#e6c89a' }}/>
+            VIDEO · 0:24
+          </div>
+        </div>
+      </div>
+
+      <div style={{ position: 'absolute', top: 60, left: 14, right: 14,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 10 }}>
+        <RoundBtn dark onClick={() => go('album', { albumId })}><Icon.Close/></RoundBtn>
+        <div style={{ textAlign: 'center', color: '#fff' }}>
+          <div style={{ fontSize: 10.5, letterSpacing: '.18em', opacity: .7, textTransform: 'uppercase' }}>{album.subtitle}</div>
+          <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 14, fontWeight: 500, marginTop: 2 }}>{album.title}</div>
+        </div>
+        <RoundBtn dark><Icon.More/></RoundBtn>
+      </div>
+
+      <div style={{ position: 'absolute', left: 14, right: 14, bottom: 28, zIndex: 10 }}>
+        <div style={{
+          background: 'rgba(20,14,8,.55)', border: '1px solid rgba(255,255,255,.1)',
+          backdropFilter: 'blur(20px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+          borderRadius: 18, padding: '14px 16px', color: '#fff',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ fontSize: 12, opacity: .85, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Icon.Calendar/> {photo.date}
+            </div>
+            <div style={{ fontSize: 11, opacity: .6,
+              fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic' }}>iPhone · 4K · 30fps</div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+            <span style={{ fontSize: 11, opacity: .8,
+              fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic' }}>0:00</span>
+            <div style={{ flex: 1, height: 3, borderRadius: 99,
+              background: 'rgba(255,255,255,.18)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '0%', background: '#e6c89a' }}/>
+            </div>
+            <span style={{ fontSize: 11, opacity: .8,
+              fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic' }}>0:24</span>
+          </div>
+          <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 14, lineHeight: 1.55 }}>
+            波打ち際を駆ける足音と、笑い声。<br/>
+            <span style={{ opacity: .7, fontSize: 12 }}>音をオンにすると、はっきり聞こえます。</span>
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: 14,
+          padding: '8px 4px', color: '#fff' }}>
+          {[
+            { icon: <Icon.Heart/>, label: 'お気に入り' },
+            { icon: <Icon.Down/>,  label: '保存' },
+            { icon: <Icon.Share/>, label: '共有' },
+            { icon: <Icon.Info/>,  label: '詳細' },
+          ].map(a => (
+            <div key={a.label} className="tap" style={{ display: 'flex', flexDirection: 'column',
+              alignItems: 'center', gap: 4, opacity: .92 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 999,
+                background: 'rgba(255,255,255,.10)', border: '1px solid rgba(255,255,255,.18)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{a.icon}</div>
+              <span style={{ fontSize: 10.5, letterSpacing: '.05em', opacity: .85 }}>{a.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────
+// YEARS
+// ─────────────────────────────────────────────────────────
+function ScreenYears({ go }) {
+  const years = [
+    { y: 2026, count: 18, albums: ['kyoto'] },
+    { y: 2025, count: 83, albums: ['okinawa','family','hokkaido','daily'] },
+    { y: 2024, count: 43, albums: ['paris','hawaii'] },
+    { y: 2023, count: 8,  albums: ['daily'] },
+  ];
+
+  return (
+    <div className="screen-enter" style={{ height: '100%', overflow: 'hidden', position: 'relative', background: 'var(--bg)' }}>
+      <div style={{ height: '100%', overflow: 'auto', paddingBottom: 110 }}>
+        <div style={{ padding: '64px 22px 8px' }}>
+          <div style={{ fontSize: 10.5, letterSpacing: '.22em', textTransform: 'uppercase',
+            color: 'var(--ink-3)', marginBottom: 4 }}>By Year</div>
+          <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 30, fontWeight: 500,
+            color: 'var(--ink)' }}>年で振り返る</div>
+          <div style={{ fontSize: 12.5, color: 'var(--ink-2)', marginTop: 8, lineHeight: 1.7 }}>
+            写真は時間と一緒に。<br/>
+            上から新しい順に並んでいます。
+          </div>
+        </div>
+
+        {years.map(({ y, count, albums }, i) => (
+          <div key={y} style={{ padding: '22px 18px 8px' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+              padding: '0 4px 12px' }}>
+              <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 44, fontWeight: 500,
+                color: 'var(--ink)', lineHeight: 1, letterSpacing: '.01em' }}>{y}</div>
+              <div style={{ fontSize: 11.5, color: 'var(--ink-3)', letterSpacing: '.05em' }}>
+                {albums.length}冊 · {count}枚
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '0 4px 4px' }}>
+              {albums.map(aid => {
+                const a = ALBUMS.find(x => x.id === aid);
+                return (
+                  <div key={aid} className="tap" onClick={() => go('album', { albumId: aid })}
+                    style={{ minWidth: 156, borderRadius: 14, overflow: 'hidden', flexShrink: 0,
+                      background: 'var(--bg-elev)', border: '1px solid var(--line)',
+                      boxShadow: 'var(--shadow-1)' }}>
+                    <div style={{ aspectRatio: '4 / 5',
+                      background: `url(project/placeholders/${a.cover}-lg.svg) center/cover` }}/>
+                    <div style={{ padding: '8px 11px 11px' }}>
+                      <div style={{ fontSize: 9.5, letterSpacing: '.16em', textTransform: 'uppercase',
+                        color: 'var(--ink-3)', marginBottom: 2 }}>{a.date}</div>
+                      <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 13.5,
+                        fontWeight: 500, color: 'var(--ink)' }}>{a.title}</div>
+                    </div>
+                  </div>
+                );
+              })}
+              <div className="tap" onClick={() => go('home')} style={{ minWidth: 90, display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                borderRadius: 14, border: '1px dashed var(--line-strong)',
+                color: 'var(--ink-3)', fontSize: 11.5, letterSpacing: '.05em', gap: 6 }}>
+                <Icon.ChevR/> すべて
+              </div>
+            </div>
+            {i < years.length - 1 && <div style={{ height: 1, background: 'var(--line)', marginTop: 22 }}/>}
+          </div>
+        ))}
+      </div>
+      <TabBar active="years" go={go}/>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────
+// SEARCH
+// ─────────────────────────────────────────────────────────
+function ScreenSearch({ go }) {
+  const recent = ['沖縄','おばあちゃん','京都','花火'];
+  const all = [];
+  ALBUMS.forEach(a => {
+    PHOTOS[a.id].forEach((p, idx) => {
+      all.push({ ...p, _albumId: a.id, _photoIndex: idx });
+    });
+  });
+  const allSliced = all.slice(0, 18);
+
+  return (
+    <div className="screen-enter" style={{ height: '100%', overflow: 'hidden', position: 'relative', background: 'var(--bg)' }}>
+      <div style={{ height: '100%', overflow: 'auto', paddingBottom: 110 }}>
+        <div style={{ padding: '64px 22px 8px' }}>
+          <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 28, fontWeight: 500,
+            color: 'var(--ink)' }}>さがす</div>
+        </div>
+
+        <div style={{ padding: '10px 18px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8,
+            height: 46, padding: '0 14px',
+            background: 'var(--bg-elev)', border: '1px solid var(--line)',
+            borderRadius: 14, boxShadow: 'var(--shadow-1)' }}>
+            <Icon.Search style={{ color: 'var(--ink-3)' }}/>
+            <input placeholder="場所、人、できごと..." style={{
+              flex: 1, border: 'none', outline: 'none', background: 'transparent',
+              fontSize: 14, color: 'var(--ink)', fontFamily: 'inherit' }}/>
+          </div>
+        </div>
+
+        <div style={{ padding: '4px 22px 10px', fontSize: 10.5, letterSpacing: '.18em',
+          textTransform: 'uppercase', color: 'var(--ink-3)' }}>最近の検索</div>
+        <div style={{ display: 'flex', gap: 6, padding: '0 18px 22px', overflowX: 'auto' }}>
+          {recent.map(t => <div key={t} className="chip">{t}</div>)}
+        </div>
+
+        <div style={{ padding: '0 22px 12px', fontSize: 10.5, letterSpacing: '.18em',
+          textTransform: 'uppercase', color: 'var(--ink-3)' }}>カテゴリ</div>
+        <div style={{ padding: '0 18px 22px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          {[
+            { l: '人物', n: 41, c: 'family-1',  aid: 'family' },
+            { l: '風景', n: 64, c: 'kyoto-3',   aid: 'kyoto' },
+            { l: '海',   n: 32, c: 'okinawa-2', aid: 'okinawa' },
+            { l: '街',   n: 28, c: 'paris-1',   aid: 'paris' },
+          ].map(c => (
+            <div key={c.l} className="tap" onClick={() => go('album', { albumId: c.aid })}
+              style={{ position: 'relative', borderRadius: 14, overflow: 'hidden',
+                aspectRatio: '16 / 9',
+                background: `url(project/placeholders/${c.c}-lg.svg) center/cover`,
+                boxShadow: 'var(--shadow-1)' }}>
+              <div style={{ position: 'absolute', inset: 0,
+                background: 'linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(20,12,6,.7) 100%)' }}/>
+              <div style={{ position: 'absolute', left: 12, bottom: 9, color: '#fff' }}>
+                <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 16, fontWeight: 500 }}>{c.l}</div>
+                <div style={{ fontSize: 10.5, opacity: .85 }}>{c.n}枚</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ padding: '0 22px 10px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+          <div style={{ fontSize: 10.5, letterSpacing: '.18em', textTransform: 'uppercase',
+            color: 'var(--ink-3)' }}>すべての写真</div>
+          <div style={{ fontSize: 11, color: 'var(--accent)' }}>{TOTAL_PHOTOS}枚</div>
+        </div>
+        <div style={{ padding: '0 14px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
+          {allSliced.map(p => (
+            <div key={p.id} className="tap"
+              onClick={() => go('lightbox', { albumId: p._albumId, photoIndex: p._photoIndex })}
+              style={{ aspectRatio: '1 / 1', borderRadius: 4,
+                background: `url(${p.thumb}) center/cover` }}/>
+          ))}
+        </div>
+      </div>
+      <TabBar active="search" go={go}/>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────
+// PROFILE
+// ─────────────────────────────────────────────────────────
+function SettingsGroup({ title, rows }) {
+  return (
+    <div style={{ padding: '0 18px 22px' }}>
+      <div style={{ fontSize: 10.5, letterSpacing: '.18em', textTransform: 'uppercase',
+        color: 'var(--ink-3)', padding: '0 6px 8px' }}>{title}</div>
+      <div style={{ borderRadius: 16, overflow: 'hidden', background: 'var(--bg-elev)',
+        border: '1px solid var(--line)', boxShadow: 'var(--shadow-1)' }}>
+        {rows.map((r, i) => (
+          <div key={r.label} className="tap" style={{ display: 'flex', alignItems: 'center', gap: 12,
+            padding: '12px 14px', borderTop: i ? '1px solid var(--line)' : 'none' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(184,146,101,.14)',
+              color: 'var(--accent)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{r.icon}</div>
+            <div style={{ flex: 1, fontSize: 14, color: 'var(--ink)' }}>{r.label}</div>
+            <div style={{ fontSize: 12, color: 'var(--ink-3)' }}>{r.detail}</div>
+            <Icon.ChevR style={{ color: 'var(--ink-3)' }}/>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ScreenProfile({ go }) {
+  const rows1 = [
+    { label: 'みんなの招待状', detail: '4名がアクセス中', icon: <Icon.User/> },
+    { label: '合言葉の変更',   detail: '最終: 2026.01.04', icon: <Icon.Lock/> },
+    { label: '通知',          detail: 'ON',                icon: <Icon.Sparkle/> },
+  ];
+  const rows2 = [
+    { label: '画質',           detail: 'オリジナル', icon: <Icon.Down/> },
+    { label: 'ダウンロード許可', detail: '家族のみ',   icon: <Icon.Down/> },
+    { label: 'このサイトについて', detail: 'v.1.0',   icon: <Icon.Info/> },
+  ];
+
+  return (
+    <div className="screen-enter" style={{ height: '100%', overflow: 'hidden', position: 'relative', background: 'var(--bg)' }}>
+      <div style={{ height: '100%', overflow: 'auto', paddingBottom: 110 }}>
+        <div style={{ padding: '64px 22px 26px', textAlign: 'center' }}>
+          <div style={{ width: 74, height: 74, borderRadius: 999, margin: '0 auto 14px',
+            background: 'linear-gradient(135deg, #c9a065 0%, #7a4f2c 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#fff', fontFamily: "'Cormorant Garamond',serif", fontSize: 30, fontWeight: 500,
+            boxShadow: 'var(--shadow-2)', border: '3px solid var(--bg-elev)' }}>A</div>
+          <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 22, fontWeight: 500,
+            color: 'var(--ink)' }}>あやか</div>
+          <div style={{ fontSize: 12, color: 'var(--ink-3)', marginTop: 4, letterSpacing: '.06em',
+            display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <Icon.Lock/> 家族 · 管理者
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+          margin: '0 18px 26px', padding: '14px 0',
+          background: 'var(--bg-elev)', border: '1px solid var(--line)',
+          borderRadius: 16, boxShadow: 'var(--shadow-1)' }}>
+          {[
+            { n: TOTAL_PHOTOS, l: '写真' },
+            { n: ALBUMS.length, l: 'アルバム' },
+            { n: 4, l: 'みんな' },
+          ].map((s, i, arr) => (
+            <div key={s.l} style={{ textAlign: 'center', position: 'relative' }}>
+              <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 26, fontWeight: 500,
+                color: 'var(--ink)', lineHeight: 1 }}>{s.n}</div>
+              <div style={{ fontSize: 10.5, color: 'var(--ink-3)', marginTop: 4, letterSpacing: '.1em' }}>{s.l}</div>
+              {i < arr.length - 1 && <div style={{ position: 'absolute', right: 0, top: '20%',
+                bottom: '20%', width: 1, background: 'var(--line)' }}/>}
+            </div>
+          ))}
+        </div>
+
+        <SettingsGroup title="家族・プライバシー" rows={rows1}/>
+        <SettingsGroup title="表示と保存" rows={rows2}/>
+
+        <div style={{ padding: '8px 18px 32px' }}>
+          <div className="tap" onClick={() => go('lock')} style={{
+            height: 48, borderRadius: 14, background: 'var(--bg-elev)',
+            border: '1px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--accent)', fontSize: 14, fontWeight: 500 }}>
+            ロックする
+          </div>
+        </div>
+
+        <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--ink-3)', paddingBottom: 16,
+          fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic', letterSpacing: '.08em' }}>
+          Memoria · made with love
+        </div>
+      </div>
+      <TabBar active="profile" go={go}/>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────
+// APP ROUTER
+// ─────────────────────────────────────────────────────────
+function App() {
+  const [nav, setNav] = React.useState({ screen: 'lock' });
+  const go = (screen, extra = {}) => setNav({ screen, ...extra });
+
+  const { screen, albumId, photoIndex } = nav;
+
+  let view;
+  switch (screen) {
+    case 'lock':           view = <ScreenLock go={go}/>; break;
+    case 'home':           view = <ScreenHome go={go}/>; break;
+    case 'albums-list':    view = <ScreenAlbumsList go={go}/>; break;
+    case 'album':          view = <ScreenAlbum albumId={albumId} go={go}/>; break;
+    case 'lightbox':       view = <ScreenLightbox albumId={albumId} photoIndex={photoIndex} go={go}/>; break;
+    case 'video-lightbox': view = <ScreenVideoLightbox albumId={albumId} photoIndex={photoIndex} go={go}/>; break;
+    case 'years':          view = <ScreenYears go={go}/>; break;
+    case 'search':         view = <ScreenSearch go={go}/>; break;
+    case 'profile':        view = <ScreenProfile go={go}/>; break;
+    default:               view = <ScreenHome go={go}/>;
+  }
+
+  return (
+    <div className="phone-screen" key={`${screen}-${albumId || ''}-${photoIndex ?? ''}`}
+      style={{ width: '100%', maxWidth: 430, margin: '0 auto', height: '100dvh',
+        overflow: 'hidden', position: 'relative' }}>
+      {view}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>
