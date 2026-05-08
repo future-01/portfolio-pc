@@ -1,0 +1,6 @@
+.claude/
+.playwright-mcp/
+Memoria.published.html
+*.log
+.DS_Store
+Thumbs.db

@@ -40,7 +40,7 @@
       overflow: hidden;
     }
     #root { height: 100%; }
-    input { font-family: inherit; font-size: inherit; }
+    input, textarea { font-family: inherit; font-size: inherit; }
     ::-webkit-scrollbar { display: none; }
     * { scrollbar-width: none; }
     ::selection { background: var(--accent-soft); color: #fff; }
@@ -83,6 +83,145 @@
       to   { opacity: 1; transform: translateY(0); }
     }
     .screen-enter { animation: fadeIn 240ms cubic-bezier(.2,.7,.3,1) both; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-7px); }
+      40%, 80% { transform: translateX(7px); }
+    }
+    .shake { animation: shake 380ms ease-in-out; }
+
+    .fab {
+      position: absolute; right: 18px; bottom: 100px;
+      width: 56px; height: 56px; border-radius: 999px;
+      background: var(--accent); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 22px rgba(74,55,35,.32), 0 2px 6px rgba(74,55,35,.2);
+      cursor: pointer; z-index: 30; border: none;
+    }
+    .fab:active { transform: scale(.94); }
+
+    .modal-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(20,14,8,.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      padding: 18px;
+    }
+    .modal-card {
+      background: var(--bg-elev);
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-overlay);
+      width: 100%; max-width: 360px;
+      max-height: 86vh; overflow-y: auto;
+      padding: 22px 20px;
+    }
+    .admin-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 30px;
+      background: linear-gradient(180deg, #2a221a 0%, #1f1812 100%);
+      color: rgba(255,255,255,.92);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 14px;
+      font-size: 11px; letter-spacing: .08em;
+      z-index: 200;
+    }
+
+    .editable-pen {
+      display: inline-flex;
+      width: 20px; height: 20px;
+      border-radius: 999px;
+      background: rgba(184,146,101,.20);
+      color: var(--accent);
+      align-items: center; justify-content: center;
+      margin-left: 6px; vertical-align: middle;
+      cursor: pointer; flex-shrink: 0;
+    }
+    .editable-pen.dark {
+      background: rgba(255,255,255,.18);
+      color: #fff;
+    }
+
+    .text-input {
+      font: inherit; color: var(--ink);
+      background: rgba(255,255,255,.96);
+      border: 1.5px solid var(--accent);
+      border-radius: 8px; padding: 4px 10px;
+      outline: none;
+      box-shadow: var(--shadow-1);
+      width: 100%;
+    }
+    .text-area {
+      font: inherit; color: var(--ink);
+      background: rgba(255,255,255,.96);
+      border: 1.5px solid var(--accent);
+      border-radius: 8px; padding: 6px 10px;
+      outline: none;
+      box-shadow: var(--shadow-1);
+      width: 100%;
+      resize: vertical; min-height: 60px;
+    }
+
+    .progress-track {
+      width: 100%; height: 6px;
+      background: var(--line);
+      border-radius: 99px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width 200ms linear;
+    }
+
+    .form-row { margin-bottom: 14px; }
+    .form-label {
+      display: block; font-size: 11px;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: var(--ink-3); margin-bottom: 6px;
+    }
+    .btn-primary {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; height: 44px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 12px;
+      font-size: 14px; font-weight: 500;
+      cursor: pointer; width: 100%;
+      letter-spacing: .04em;
+    }
+    .btn-primary:active { opacity: .82; }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-secondary {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; height: 44px;
+      background: transparent; color: var(--ink-2);
+      border: 1px solid var(--line-strong);
+      border-radius: 12px; font-size: 13px;
+      cursor: pointer; width: 100%;
+    }
+    .btn-secondary:active { opacity: .7; }
+    .btn-danger {
+      background: #b13a2a; color: #fff;
+      border: none;
+    }
+
+    .longpress-menu {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      background: var(--bg-elev); border-top: 1px solid var(--line);
+      border-radius: 22px 22px 0 0;
+      box-shadow: 0 -10px 30px rgba(20,14,8,.25);
+      padding: 12px 0 28px; z-index: 110;
+    }
+    .longpress-menu .row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 22px; cursor: pointer;
+      font-size: 14px; color: var(--ink);
+    }
+    .longpress-menu .row:active { background: var(--bg-soft); }
+    .longpress-menu .row.danger { color: #b13a2a; }
   </style>
 </head>
 <body>
@@ -94,38 +233,1202 @@
 
   <script type="text/babel" data-presets="react">
 // ─────────────────────────────────────────────────────────
-// DATA
+// SEED PHOTO BUILDER (used only by initial DEFAULT_MEMORIA_CONFIG)
 // ─────────────────────────────────────────────────────────
-const ALBUMS = [
-  { id:'kyoto',    title:'京都の冬',           subtitle:'Kyoto, Japan',   date:'2026.01', year:2026, count:18, cover:'kyoto-3',    desc:'雪のちらつく朝、祖父の手を引いて歩いた石畳。' },
-  { id:'okinawa',  title:'沖縄、家族旅行',     subtitle:'Okinawa, Japan', date:'2025.08', year:2025, count:22, cover:'okinawa-2',  desc:'海の音と笑い声しか聞こえなかった四日間。' },
-  { id:'family',   title:'おばあちゃんの誕生日', subtitle:'Home, Tokyo',  date:'2025.05', year:2025, count:14, cover:'family-1',   desc:'七十五本のろうそく、みんなで吹き消した。' },
-  { id:'hokkaido', title:'北海道、雪の朝',      subtitle:'Hokkaido, Japan', date:'2025.02', year:2025, count:16, cover:'hokkaido-1', desc:'銀世界。湯気と、白い息と、やわらかい光。' },
-  { id:'paris',    title:'パリの十日間',        subtitle:'Paris, France',  date:'2024.10', year:2024, count:24, cover:'paris-1',    desc:'古い石と、新しい空。歩き疲れたら珈琲を。' },
-  { id:'hawaii',   title:'ハワイの夏',          subtitle:'Honolulu, USA',  date:'2024.07', year:2024, count:19, cover:'hawaii-2',   desc:'潮風、日焼け、夜のフラ。' },
-  { id:'daily',    title:'日々のかけら',        subtitle:'Around Tokyo',   date:'通年',    year:2025, count:12, cover:'daily-1',    desc:'何でもない日のごちそう。' },
-];
-
-function buildPhotos(album) {
-  const out = [];
+function buildSeedPhotos(albumId, count, datePrefix, desc) {
   const days = ['01','02','03','04','05'];
-  for (let i = 0; i < album.count; i++) {
+  const out = [];
+  const prefix = datePrefix.replace('通年', '2025.06');
+  for (let i = 0; i < count; i++) {
     const slot = (i % 6) + 1;
     const day = days[i % days.length];
     out.push({
-      id:    `${album.id}-${i+1}`,
-      thumb: `project/placeholders/${album.id}-${slot}.svg`,
-      full:  `project/placeholders/${album.id}-${slot}-lg.svg`,
-      date:  `${album.date.replace('通年','2025.06')}.${day}`,
-      caption: i === 0 ? album.desc : '',
+      id: `${albumId}-p-${String(i+1).padStart(3,'0')}`,
+      src: `project/placeholders/${albumId}-${slot}.svg`,
+      date: `${prefix}.${day}`,
+      caption: i === 0 ? desc : '',
     });
   }
   return out;
 }
 
-const PHOTOS = {};
-ALBUMS.forEach(a => { PHOTOS[a.id] = buildPhotos(a); });
-const TOTAL_PHOTOS = ALBUMS.reduce((s, a) => s + a.count, 0);
+// ─────────────────────────────────────────────────────────
+// CONFIG  (MEMORIA_CONFIG_BEGIN ~ END is replaced on publish)
+// ─────────────────────────────────────────────────────────
+// MEMORIA_CONFIG_BEGIN
+const DEFAULT_MEMORIA_CONFIG = {
+  "site": {
+    "metaTitle": "Memoria — 家族の写真集",
+    "brandName": "記憶",
+    "brandNameLatin": "Memoria",
+    "footer": "Memoria · made with love"
+  },
+  "auth": {
+    "passphraseHash": "k3EmxICU+3uDFc7rWtXTd0SFGJjKdLq45oI6JYEKqj8=",
+    "passphraseSalt": "AN25+EyWkkPp9WaDB0JV6A==",
+    "adminPassphraseHash": "6233oy+eqIu5ecyuNlgkBL2JkGY0q8Hg7VqHowzmwvQ=",
+    "adminPassphraseSalt": "d5Em0DW8IvgtsbsE3NGDxg==",
+    "kdfIterations": 310000,
+    "passphraseUpdatedAt": "2026.05.08"
+  },
+  "cloudinary": {
+    "cloudName": "",
+    "uploadPreset": ""
+  },
+  "lock": {
+    "badge": "Family Only · 限定公開",
+    "headline1": "記憶を、",
+    "headline2": "そっと",
+    "headline3": "ひらく。",
+    "tagline": "Memoria — a private archive",
+    "note1": "家族と、ほんとうに親しい人だけのための、",
+    "note2": "旅と日々の写真集です。",
+    "invite": "招待された方のみ閲覧できます"
+  },
+  "home": {
+    "eyebrow": "Family Archive",
+    "name": "みらい",
+    "newPhotoCount": 12,
+    "sectionAlbumsLabel": "旅とできごと",
+    "sectionYearsLabel": "年で振り返る"
+  },
+  "profile": {
+    "userName": "あやか",
+    "userInitial": "A",
+    "userRole": "家族 · 管理者"
+  },
+  "albums": [
+    {
+      "id": "kyoto",
+      "title": "京都の冬",
+      "subtitle": "Kyoto, Japan",
+      "date": "2026.01",
+      "year": 2026,
+      "desc": "雪のちらつく朝、祖父の手を引いて歩いた石畳。",
+      "coverPhotoId": "kyoto-p-003",
+      "photos": [
+        {
+          "id": "kyoto-p-001",
+          "src": "project/placeholders/kyoto-1.svg",
+          "date": "2026.01.01",
+          "caption": "雪のちらつく朝、祖父の手を引いて歩いた石畳。"
+        },
+        {
+          "id": "kyoto-p-002",
+          "src": "project/placeholders/kyoto-2.svg",
+          "date": "2026.01.02",
+          "caption": ""
+        },
+        {
+          "id": "kyoto-p-003",
+          "src": "project/placeholders/kyoto-3.svg",
+          "date": "2026.01.03",
+          "caption": ""
+        },
+        {
+          "id": "kyoto-p-004",
+          "src": "project/placeholders/kyoto-4.svg",
+          "date": "2026.01.04",
+          "caption": ""
+        },
+        {
+          "id": "kyoto-p-005",
+          "src": "project/placeholders/kyoto-5.svg",
+          "date": "2026.01.05",
+          "caption": ""
+        },
+        {
+          "id": "kyoto-p-006",
+          "src": "project/placeholders/kyoto-6.svg",
+          "date": "2026.01.01",
+          "caption": ""
+        },
+        {
+          "id": "kyoto-p-007",
+          "src": "project/placeholders/kyoto-1.svg",
+          "date": "2026.01.02",
+          "caption": ""
+        },
+        {
+          "id": "kyoto-p-008",
+          "src": "project/placeholders/kyoto-2.svg",
+          "date": "2026.01.03",
+          "caption": ""
+        },
+        {
+          "id": "kyoto-p-009",
+          "src": "project/placeholders/kyoto-3.svg",
+          "date": "2026.01.04",
+          "caption": ""
+        },
+        {
+          "id": "kyoto-p-010",
+          "src": "project/placeholders/kyoto-4.svg",
+          "date": "2026.01.05",
+          "caption": ""
+        },
+        {
+          "id": "kyoto-p-011",
+          "src": "project/placeholders/kyoto-5.svg",
+          "date": "2026.01.01",
+          "caption": ""
+        },
+        {
+          "id": "kyoto-p-012",
+          "src": "project/placeholders/kyoto-6.svg",
+          "date": "2026.01.02",
+          "caption": ""
+        },
+        {
+          "id": "kyoto-p-013",
+          "src": "project/placeholders/kyoto-1.svg",
+          "date": "2026.01.03",
+          "caption": ""
+        },
+        {
+          "id": "kyoto-p-014",
+          "src": "project/placeholders/kyoto-2.svg",
+          "date": "2026.01.04",
+          "caption": ""
+        },
+        {
+          "id": "kyoto-p-015",
+          "src": "project/placeholders/kyoto-3.svg",
+          "date": "2026.01.05",
+          "caption": ""
+        },
+        {
+          "id": "kyoto-p-016",
+          "src": "project/placeholders/kyoto-4.svg",
+          "date": "2026.01.01",
+          "caption": ""
+        },
+        {
+          "id": "kyoto-p-017",
+          "src": "project/placeholders/kyoto-5.svg",
+          "date": "2026.01.02",
+          "caption": ""
+        },
+        {
+          "id": "kyoto-p-018",
+          "src": "project/placeholders/kyoto-6.svg",
+          "date": "2026.01.03",
+          "caption": ""
+        }
+      ]
+    },
+    {
+      "id": "okinawa",
+      "title": "沖縄、家族旅行",
+      "subtitle": "Okinawa, Japan",
+      "date": "2025.08",
+      "year": 2025,
+      "desc": "海の音と笑い声しか聞こえなかった四日間。",
+      "coverPhotoId": "okinawa-p-002",
+      "photos": [
+        {
+          "id": "okinawa-p-001",
+          "src": "project/placeholders/okinawa-1.svg",
+          "date": "2025.08.01",
+          "caption": "海の音と笑い声しか聞こえなかった四日間。"
+        },
+        {
+          "id": "okinawa-p-002",
+          "src": "project/placeholders/okinawa-2.svg",
+          "date": "2025.08.02",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-003",
+          "src": "project/placeholders/okinawa-3.svg",
+          "date": "2025.08.03",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-004",
+          "src": "project/placeholders/okinawa-4.svg",
+          "date": "2025.08.04",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-005",
+          "src": "project/placeholders/okinawa-5.svg",
+          "date": "2025.08.05",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-006",
+          "src": "project/placeholders/okinawa-6.svg",
+          "date": "2025.08.01",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-007",
+          "src": "project/placeholders/okinawa-1.svg",
+          "date": "2025.08.02",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-008",
+          "src": "project/placeholders/okinawa-2.svg",
+          "date": "2025.08.03",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-009",
+          "src": "project/placeholders/okinawa-3.svg",
+          "date": "2025.08.04",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-010",
+          "src": "project/placeholders/okinawa-4.svg",
+          "date": "2025.08.05",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-011",
+          "src": "project/placeholders/okinawa-5.svg",
+          "date": "2025.08.01",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-012",
+          "src": "project/placeholders/okinawa-6.svg",
+          "date": "2025.08.02",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-013",
+          "src": "project/placeholders/okinawa-1.svg",
+          "date": "2025.08.03",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-014",
+          "src": "project/placeholders/okinawa-2.svg",
+          "date": "2025.08.04",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-015",
+          "src": "project/placeholders/okinawa-3.svg",
+          "date": "2025.08.05",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-016",
+          "src": "project/placeholders/okinawa-4.svg",
+          "date": "2025.08.01",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-017",
+          "src": "project/placeholders/okinawa-5.svg",
+          "date": "2025.08.02",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-018",
+          "src": "project/placeholders/okinawa-6.svg",
+          "date": "2025.08.03",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-019",
+          "src": "project/placeholders/okinawa-1.svg",
+          "date": "2025.08.04",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-020",
+          "src": "project/placeholders/okinawa-2.svg",
+          "date": "2025.08.05",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-021",
+          "src": "project/placeholders/okinawa-3.svg",
+          "date": "2025.08.01",
+          "caption": ""
+        },
+        {
+          "id": "okinawa-p-022",
+          "src": "project/placeholders/okinawa-4.svg",
+          "date": "2025.08.02",
+          "caption": ""
+        }
+      ]
+    },
+    {
+      "id": "family",
+      "title": "おばあちゃんの誕生日",
+      "subtitle": "Home, Tokyo",
+      "date": "2025.05",
+      "year": 2025,
+      "desc": "七十五本のろうそく、みんなで吹き消した。",
+      "coverPhotoId": "family-p-001",
+      "photos": [
+        {
+          "id": "family-p-001",
+          "src": "project/placeholders/family-1.svg",
+          "date": "2025.05.01",
+          "caption": "七十五本のろうそく、みんなで吹き消した。"
+        },
+        {
+          "id": "family-p-002",
+          "src": "project/placeholders/family-2.svg",
+          "date": "2025.05.02",
+          "caption": ""
+        },
+        {
+          "id": "family-p-003",
+          "src": "project/placeholders/family-3.svg",
+          "date": "2025.05.03",
+          "caption": ""
+        },
+        {
+          "id": "family-p-004",
+          "src": "project/placeholders/family-4.svg",
+          "date": "2025.05.04",
+          "caption": ""
+        },
+        {
+          "id": "family-p-005",
+          "src": "project/placeholders/family-5.svg",
+          "date": "2025.05.05",
+          "caption": ""
+        },
+        {
+          "id": "family-p-006",
+          "src": "project/placeholders/family-6.svg",
+          "date": "2025.05.01",
+          "caption": ""
+        },
+        {
+          "id": "family-p-007",
+          "src": "project/placeholders/family-1.svg",
+          "date": "2025.05.02",
+          "caption": ""
+        },
+        {
+          "id": "family-p-008",
+          "src": "project/placeholders/family-2.svg",
+          "date": "2025.05.03",
+          "caption": ""
+        },
+        {
+          "id": "family-p-009",
+          "src": "project/placeholders/family-3.svg",
+          "date": "2025.05.04",
+          "caption": ""
+        },
+        {
+          "id": "family-p-010",
+          "src": "project/placeholders/family-4.svg",
+          "date": "2025.05.05",
+          "caption": ""
+        },
+        {
+          "id": "family-p-011",
+          "src": "project/placeholders/family-5.svg",
+          "date": "2025.05.01",
+          "caption": ""
+        },
+        {
+          "id": "family-p-012",
+          "src": "project/placeholders/family-6.svg",
+          "date": "2025.05.02",
+          "caption": ""
+        },
+        {
+          "id": "family-p-013",
+          "src": "project/placeholders/family-1.svg",
+          "date": "2025.05.03",
+          "caption": ""
+        },
+        {
+          "id": "family-p-014",
+          "src": "project/placeholders/family-2.svg",
+          "date": "2025.05.04",
+          "caption": ""
+        }
+      ]
+    },
+    {
+      "id": "hokkaido",
+      "title": "北海道、雪の朝",
+      "subtitle": "Hokkaido, Japan",
+      "date": "2025.02",
+      "year": 2025,
+      "desc": "銀世界。湯気と、白い息と、やわらかい光。",
+      "coverPhotoId": "hokkaido-p-001",
+      "photos": [
+        {
+          "id": "hokkaido-p-001",
+          "src": "project/placeholders/hokkaido-1.svg",
+          "date": "2025.02.01",
+          "caption": "銀世界。湯気と、白い息と、やわらかい光。"
+        },
+        {
+          "id": "hokkaido-p-002",
+          "src": "project/placeholders/hokkaido-2.svg",
+          "date": "2025.02.02",
+          "caption": ""
+        },
+        {
+          "id": "hokkaido-p-003",
+          "src": "project/placeholders/hokkaido-3.svg",
+          "date": "2025.02.03",
+          "caption": ""
+        },
+        {
+          "id": "hokkaido-p-004",
+          "src": "project/placeholders/hokkaido-4.svg",
+          "date": "2025.02.04",
+          "caption": ""
+        },
+        {
+          "id": "hokkaido-p-005",
+          "src": "project/placeholders/hokkaido-5.svg",
+          "date": "2025.02.05",
+          "caption": ""
+        },
+        {
+          "id": "hokkaido-p-006",
+          "src": "project/placeholders/hokkaido-6.svg",
+          "date": "2025.02.01",
+          "caption": ""
+        },
+        {
+          "id": "hokkaido-p-007",
+          "src": "project/placeholders/hokkaido-1.svg",
+          "date": "2025.02.02",
+          "caption": ""
+        },
+        {
+          "id": "hokkaido-p-008",
+          "src": "project/placeholders/hokkaido-2.svg",
+          "date": "2025.02.03",
+          "caption": ""
+        },
+        {
+          "id": "hokkaido-p-009",
+          "src": "project/placeholders/hokkaido-3.svg",
+          "date": "2025.02.04",
+          "caption": ""
+        },
+        {
+          "id": "hokkaido-p-010",
+          "src": "project/placeholders/hokkaido-4.svg",
+          "date": "2025.02.05",
+          "caption": ""
+        },
+        {
+          "id": "hokkaido-p-011",
+          "src": "project/placeholders/hokkaido-5.svg",
+          "date": "2025.02.01",
+          "caption": ""
+        },
+        {
+          "id": "hokkaido-p-012",
+          "src": "project/placeholders/hokkaido-6.svg",
+          "date": "2025.02.02",
+          "caption": ""
+        },
+        {
+          "id": "hokkaido-p-013",
+          "src": "project/placeholders/hokkaido-1.svg",
+          "date": "2025.02.03",
+          "caption": ""
+        },
+        {
+          "id": "hokkaido-p-014",
+          "src": "project/placeholders/hokkaido-2.svg",
+          "date": "2025.02.04",
+          "caption": ""
+        },
+        {
+          "id": "hokkaido-p-015",
+          "src": "project/placeholders/hokkaido-3.svg",
+          "date": "2025.02.05",
+          "caption": ""
+        },
+        {
+          "id": "hokkaido-p-016",
+          "src": "project/placeholders/hokkaido-4.svg",
+          "date": "2025.02.01",
+          "caption": ""
+        }
+      ]
+    },
+    {
+      "id": "paris",
+      "title": "パリの十日間",
+      "subtitle": "Paris, France",
+      "date": "2024.10",
+      "year": 2024,
+      "desc": "古い石と、新しい空。歩き疲れたら珈琲を。",
+      "coverPhotoId": "paris-p-001",
+      "photos": [
+        {
+          "id": "paris-p-001",
+          "src": "project/placeholders/paris-1.svg",
+          "date": "2024.10.01",
+          "caption": "古い石と、新しい空。歩き疲れたら珈琲を。"
+        },
+        {
+          "id": "paris-p-002",
+          "src": "project/placeholders/paris-2.svg",
+          "date": "2024.10.02",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-003",
+          "src": "project/placeholders/paris-3.svg",
+          "date": "2024.10.03",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-004",
+          "src": "project/placeholders/paris-4.svg",
+          "date": "2024.10.04",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-005",
+          "src": "project/placeholders/paris-5.svg",
+          "date": "2024.10.05",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-006",
+          "src": "project/placeholders/paris-6.svg",
+          "date": "2024.10.01",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-007",
+          "src": "project/placeholders/paris-1.svg",
+          "date": "2024.10.02",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-008",
+          "src": "project/placeholders/paris-2.svg",
+          "date": "2024.10.03",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-009",
+          "src": "project/placeholders/paris-3.svg",
+          "date": "2024.10.04",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-010",
+          "src": "project/placeholders/paris-4.svg",
+          "date": "2024.10.05",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-011",
+          "src": "project/placeholders/paris-5.svg",
+          "date": "2024.10.01",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-012",
+          "src": "project/placeholders/paris-6.svg",
+          "date": "2024.10.02",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-013",
+          "src": "project/placeholders/paris-1.svg",
+          "date": "2024.10.03",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-014",
+          "src": "project/placeholders/paris-2.svg",
+          "date": "2024.10.04",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-015",
+          "src": "project/placeholders/paris-3.svg",
+          "date": "2024.10.05",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-016",
+          "src": "project/placeholders/paris-4.svg",
+          "date": "2024.10.01",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-017",
+          "src": "project/placeholders/paris-5.svg",
+          "date": "2024.10.02",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-018",
+          "src": "project/placeholders/paris-6.svg",
+          "date": "2024.10.03",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-019",
+          "src": "project/placeholders/paris-1.svg",
+          "date": "2024.10.04",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-020",
+          "src": "project/placeholders/paris-2.svg",
+          "date": "2024.10.05",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-021",
+          "src": "project/placeholders/paris-3.svg",
+          "date": "2024.10.01",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-022",
+          "src": "project/placeholders/paris-4.svg",
+          "date": "2024.10.02",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-023",
+          "src": "project/placeholders/paris-5.svg",
+          "date": "2024.10.03",
+          "caption": ""
+        },
+        {
+          "id": "paris-p-024",
+          "src": "project/placeholders/paris-6.svg",
+          "date": "2024.10.04",
+          "caption": ""
+        }
+      ]
+    },
+    {
+      "id": "hawaii",
+      "title": "ハワイの夏",
+      "subtitle": "Honolulu, USA",
+      "date": "2024.07",
+      "year": 2024,
+      "desc": "潮風、日焼け、夜のフラ。",
+      "coverPhotoId": "hawaii-p-002",
+      "photos": [
+        {
+          "id": "hawaii-p-001",
+          "src": "project/placeholders/hawaii-1.svg",
+          "date": "2024.07.01",
+          "caption": "潮風、日焼け、夜のフラ。"
+        },
+        {
+          "id": "hawaii-p-002",
+          "src": "project/placeholders/hawaii-2.svg",
+          "date": "2024.07.02",
+          "caption": ""
+        },
+        {
+          "id": "hawaii-p-003",
+          "src": "project/placeholders/hawaii-3.svg",
+          "date": "2024.07.03",
+          "caption": ""
+        },
+        {
+          "id": "hawaii-p-004",
+          "src": "project/placeholders/hawaii-4.svg",
+          "date": "2024.07.04",
+          "caption": ""
+        },
+        {
+          "id": "hawaii-p-005",
+          "src": "project/placeholders/hawaii-5.svg",
+          "date": "2024.07.05",
+          "caption": ""
+        },
+        {
+          "id": "hawaii-p-006",
+          "src": "project/placeholders/hawaii-6.svg",
+          "date": "2024.07.01",
+          "caption": ""
+        },
+        {
+          "id": "hawaii-p-007",
+          "src": "project/placeholders/hawaii-1.svg",
+          "date": "2024.07.02",
+          "caption": ""
+        },
+        {
+          "id": "hawaii-p-008",
+          "src": "project/placeholders/hawaii-2.svg",
+          "date": "2024.07.03",
+          "caption": ""
+        },
+        {
+          "id": "hawaii-p-009",
+          "src": "project/placeholders/hawaii-3.svg",
+          "date": "2024.07.04",
+          "caption": ""
+        },
+        {
+          "id": "hawaii-p-010",
+          "src": "project/placeholders/hawaii-4.svg",
+          "date": "2024.07.05",
+          "caption": ""
+        },
+        {
+          "id": "hawaii-p-011",
+          "src": "project/placeholders/hawaii-5.svg",
+          "date": "2024.07.01",
+          "caption": ""
+        },
+        {
+          "id": "hawaii-p-012",
+          "src": "project/placeholders/hawaii-6.svg",
+          "date": "2024.07.02",
+          "caption": ""
+        },
+        {
+          "id": "hawaii-p-013",
+          "src": "project/placeholders/hawaii-1.svg",
+          "date": "2024.07.03",
+          "caption": ""
+        },
+        {
+          "id": "hawaii-p-014",
+          "src": "project/placeholders/hawaii-2.svg",
+          "date": "2024.07.04",
+          "caption": ""
+        },
+        {
+          "id": "hawaii-p-015",
+          "src": "project/placeholders/hawaii-3.svg",
+          "date": "2024.07.05",
+          "caption": ""
+        },
+        {
+          "id": "hawaii-p-016",
+          "src": "project/placeholders/hawaii-4.svg",
+          "date": "2024.07.01",
+          "caption": ""
+        },
+        {
+          "id": "hawaii-p-017",
+          "src": "project/placeholders/hawaii-5.svg",
+          "date": "2024.07.02",
+          "caption": ""
+        },
+        {
+          "id": "hawaii-p-018",
+          "src": "project/placeholders/hawaii-6.svg",
+          "date": "2024.07.03",
+          "caption": ""
+        },
+        {
+          "id": "hawaii-p-019",
+          "src": "project/placeholders/hawaii-1.svg",
+          "date": "2024.07.04",
+          "caption": ""
+        }
+      ]
+    },
+    {
+      "id": "daily",
+      "title": "日々のかけら",
+      "subtitle": "Around Tokyo",
+      "date": "通年",
+      "year": 2025,
+      "desc": "何でもない日のごちそう。",
+      "coverPhotoId": "daily-p-001",
+      "photos": [
+        {
+          "id": "daily-p-001",
+          "src": "project/placeholders/daily-1.svg",
+          "date": "2025.06.01",
+          "caption": "何でもない日のごちそう。"
+        },
+        {
+          "id": "daily-p-002",
+          "src": "project/placeholders/daily-2.svg",
+          "date": "2025.06.02",
+          "caption": ""
+        },
+        {
+          "id": "daily-p-003",
+          "src": "project/placeholders/daily-3.svg",
+          "date": "2025.06.03",
+          "caption": ""
+        },
+        {
+          "id": "daily-p-004",
+          "src": "project/placeholders/daily-4.svg",
+          "date": "2025.06.04",
+          "caption": ""
+        },
+        {
+          "id": "daily-p-005",
+          "src": "project/placeholders/daily-5.svg",
+          "date": "2025.06.05",
+          "caption": ""
+        },
+        {
+          "id": "daily-p-006",
+          "src": "project/placeholders/daily-6.svg",
+          "date": "2025.06.01",
+          "caption": ""
+        },
+        {
+          "id": "daily-p-007",
+          "src": "project/placeholders/daily-1.svg",
+          "date": "2025.06.02",
+          "caption": ""
+        },
+        {
+          "id": "daily-p-008",
+          "src": "project/placeholders/daily-2.svg",
+          "date": "2025.06.03",
+          "caption": ""
+        },
+        {
+          "id": "daily-p-009",
+          "src": "project/placeholders/daily-3.svg",
+          "date": "2025.06.04",
+          "caption": ""
+        },
+        {
+          "id": "daily-p-010",
+          "src": "project/placeholders/daily-4.svg",
+          "date": "2025.06.05",
+          "caption": ""
+        },
+        {
+          "id": "daily-p-011",
+          "src": "project/placeholders/daily-5.svg",
+          "date": "2025.06.01",
+          "caption": ""
+        },
+        {
+          "id": "daily-p-012",
+          "src": "project/placeholders/daily-6.svg",
+          "date": "2025.06.02",
+          "caption": ""
+        }
+      ]
+    }
+  ]
+};
+// MEMORIA_CONFIG_END
+
+// ─────────────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────────────
+const STORAGE_KEY = 'MEMORIA_USER_DATA';
+const ADMIN_KEY   = 'MEMORIA_ADMIN';
+const UNLOCK_KEY  = 'MEMORIA_UNLOCKED';
+
+// PBKDF2 (Web Crypto) — passphrase hashing helpers
+const KDF_ITERATIONS = 310000;
+const KDF_HASH = 'SHA-256';
+const KDF_BITS = 256;
+
+function bytesToB64(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return btoa(s);
+}
+function b64ToBytes(b64) {
+  const s = atob(b64);
+  const out = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i);
+  return out;
+}
+function randomSaltB64() {
+  return bytesToB64(crypto.getRandomValues(new Uint8Array(16)));
+}
+async function deriveHashB64(plaintext, saltB64, iterations = KDF_ITERATIONS) {
+  if (!crypto || !crypto.subtle) {
+    throw new Error('Web Crypto 未対応です。HTTPS か http://localhost で開いてください。');
+  }
+  const enc = new TextEncoder();
+  const baseKey = await crypto.subtle.importKey(
+    'raw', enc.encode(plaintext), { name: 'PBKDF2' }, false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: b64ToBytes(saltB64), iterations, hash: KDF_HASH },
+    baseKey, KDF_BITS);
+  return bytesToB64(new Uint8Array(bits));
+}
+function constantTimeEq(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false;
+  let r = 0;
+  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return r === 0;
+}
+async function verifyPassphrase(input, hashB64, saltB64, iterations) {
+  if (!input || !hashB64 || !saltB64) return false;
+  const computed = await deriveHashB64(input, saltB64, iterations || KDF_ITERATIONS);
+  return constantTimeEq(computed, hashB64);
+}
+async function makeAuthEntry(plaintext) {
+  const salt = randomSaltB64();
+  const hash = await deriveHashB64(plaintext, salt);
+  return { hash, salt };
+}
+function isWeakPassphrase(s) {
+  if (!s) return false;
+  const lower = s.toLowerCase();
+  const weak = ['password', 'passw0rd', '12345678', '123456', 'qwerty', 'abc123', 'letmein', 'welcome'];
+  return s.length < 8 || weak.includes(lower);
+}
+
+function deepClone(v) { return JSON.parse(JSON.stringify(v)); }
+function isPlainObject(v) { return v && typeof v === 'object' && !Array.isArray(v); }
+
+// Recursively merge user overrides on top of defaults.
+// Arrays in user override replace defaults entirely (so editing albums works).
+function mergeConfig(defaults, user) {
+  if (user === null || user === undefined) return deepClone(defaults);
+  if (Array.isArray(user)) return deepClone(user);
+  if (!isPlainObject(user)) return user;
+  const out = {};
+  const keys = new Set([...Object.keys(defaults || {}), ...Object.keys(user)]);
+  keys.forEach(k => {
+    if (k in user && k in (defaults || {})) {
+      out[k] = mergeConfig(defaults[k], user[k]);
+    } else if (k in user) {
+      out[k] = isPlainObject(user[k]) || Array.isArray(user[k]) ? deepClone(user[k]) : user[k];
+    } else {
+      out[k] = isPlainObject(defaults[k]) || Array.isArray(defaults[k]) ? deepClone(defaults[k]) : defaults[k];
+    }
+  });
+  return out;
+}
+
+function loadStoredConfig() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    // Drop legacy plaintext auth fields (pre-PBKDF2 schema) so they cannot
+    // override defaults. Hashes/salts from defaults are merged back in.
+    if (parsed && parsed.auth && (parsed.auth.passphrase || parsed.auth.adminPassphrase)) {
+      delete parsed.auth.passphrase;
+      delete parsed.auth.adminPassphrase;
+    }
+    return parsed;
+  } catch (e) { return null; }
+}
+function saveStoredConfig(cfg) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); } catch (e) {}
+}
+
+// Photo URL resolver — handles seed SVGs and Cloudinary uploads.
+function imgUrl(src, size) {
+  if (!src) return '';
+  if (src.includes('res.cloudinary.com') && src.includes('/upload/')) {
+    const w = size === 'thumb' ? 400 : (size === 'mid' ? 800 : 1400);
+    return src.replace('/upload/', `/upload/w_${w},q_auto,f_auto/`);
+  }
+  if (src.includes('/placeholders/') && src.endsWith('.svg')) {
+    if (size === 'thumb') return src;
+    return src.replace('.svg', '-lg.svg');
+  }
+  return src;
+}
+
+function getCoverPhoto(album) {
+  if (!album || !album.photos || !album.photos.length) return null;
+  if (album.coverPhotoId) {
+    const found = album.photos.find(p => p.id === album.coverPhotoId);
+    if (found) return found;
+  }
+  return album.photos[0];
+}
+function coverUrl(album, size = 'full') {
+  const p = getCoverPhoto(album);
+  return p ? imgUrl(p.src, size) : '';
+}
+
+function newId(prefix) {
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+}
+function totalPhotosOf(albums) {
+  return albums.reduce((s, a) => s + (a.photos ? a.photos.length : 0), 0);
+}
+function todayShort() {
+  const d = new Date();
+  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+}
+
+async function uploadToCloudinary(file, { cloudName, uploadPreset }, onProgress) {
+  if (!cloudName || !uploadPreset) {
+    throw new Error('Cloudinary 設定（クラウド名・アップロードプリセット）が必要です。');
+  }
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+    xhr.open('POST', url);
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && onProgress) onProgress(e.loaded / e.total);
+    };
+    xhr.onload = () => {
+      try {
+        const json = JSON.parse(xhr.responseText);
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve({ src: json.secure_url, width: json.width, height: json.height, publicId: json.public_id });
+        } else {
+          reject(new Error((json.error && json.error.message) || `アップロード失敗 (${xhr.status})`));
+        }
+      } catch (e) { reject(e); }
+    };
+    xhr.onerror = () => reject(new Error('ネットワークエラー'));
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', uploadPreset);
+    xhr.send(fd);
+  });
+}
+
+function replaceConfigInSource(source, config) {
+  const begin = '// MEMORIA_CONFIG_BEGIN';
+  const end = '// MEMORIA_CONFIG_END';
+  const beginIdx = source.indexOf(begin);
+  const endIdx = source.indexOf(end);
+  if (beginIdx < 0 || endIdx < 0) {
+    throw new Error('CONFIG sentinels が見つかりません。');
+  }
+  const replacement = `${begin}\nconst DEFAULT_MEMORIA_CONFIG = ${JSON.stringify(config, null, 2)};\n${end}`;
+  return source.slice(0, beginIdx) + replacement + source.slice(endIdx + end.length);
+}
+
+async function publishHTML(config) {
+  if (location.protocol === 'file:') {
+    throw new Error('ローカルファイル(file://)では書き出しできません。Live Server か GitHub Pages 経由でアクセスしてください。');
+  }
+  const res = await fetch(location.href);
+  if (!res.ok) throw new Error(`ソースHTMLの取得失敗 (${res.status})`);
+  const source = await res.text();
+  const updated = replaceConfigInSource(source, config);
+  const blob = new Blob([updated], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'Memoria.html';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function downloadJSON(name, data) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// ─────────────────────────────────────────────────────────
+// CONTEXTS & HOOKS
+// ─────────────────────────────────────────────────────────
+const ConfigContext = React.createContext(null);
+const AdminContext = React.createContext({ isAdmin: false, login: () => {}, logout: () => {} });
+
+function ConfigProvider({ children }) {
+  const [config, setConfig] = React.useState(() => mergeConfig(DEFAULT_MEMORIA_CONFIG, loadStoredConfig()));
+
+  const updateConfig = React.useCallback((updater) => {
+    setConfig(prev => {
+      const draft = deepClone(prev);
+      const result = typeof updater === 'function' ? updater(draft) : updater;
+      const next = result === undefined ? draft : result;
+      saveStoredConfig(next);
+      return next;
+    });
+  }, []);
+
+  const replaceConfig = React.useCallback((next) => {
+    saveStoredConfig(next);
+    setConfig(next);
+  }, []);
+
+  const resetConfig = React.useCallback(() => {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    setConfig(deepClone(DEFAULT_MEMORIA_CONFIG));
+  }, []);
+
+  React.useEffect(() => {
+    document.title = (config.site && config.site.metaTitle) || 'Memoria';
+  }, [config.site]);
+
+  return (
+    <ConfigContext.Provider value={{ config, updateConfig, replaceConfig, resetConfig }}>
+      {children}
+    </ConfigContext.Provider>
+  );
+}
+function useConfig() { return React.useContext(ConfigContext); }
+
+function AdminProvider({ children }) {
+  const [isAdmin, setIsAdmin] = React.useState(() => {
+    try { return localStorage.getItem(ADMIN_KEY) === '1'; } catch (e) { return false; }
+  });
+  const login = React.useCallback(() => {
+    try { localStorage.setItem(ADMIN_KEY, '1'); } catch (e) {}
+    setIsAdmin(true);
+  }, []);
+  const logout = React.useCallback(() => {
+    try { localStorage.removeItem(ADMIN_KEY); } catch (e) {}
+    setIsAdmin(false);
+  }, []);
+  return (
+    <AdminContext.Provider value={{ isAdmin, login, logout }}>
+      {children}
+    </AdminContext.Provider>
+  );
+}
+function useAdmin() { return React.useContext(AdminContext); }
+
+function useShake() {
+  const [shaking, setShaking] = React.useState(false);
+  const trigger = React.useCallback(() => {
+    setShaking(true);
+    setTimeout(() => setShaking(false), 400);
+  }, []);
+  return [shaking, trigger];
+}
+
+function useLongPress(onLongPress, onClick, ms = 550) {
+  const timer = React.useRef(null);
+  const fired = React.useRef(false);
+  const start = () => {
+    fired.current = false;
+    if (!onLongPress) return;
+    timer.current = setTimeout(() => {
+      fired.current = true;
+      onLongPress();
+    }, ms);
+  };
+  const cancel = () => {
+    if (timer.current) { clearTimeout(timer.current); timer.current = null; }
+  };
+  const click = (e) => {
+    if (fired.current) { if (e && e.preventDefault) e.preventDefault(); return; }
+    if (onClick) onClick(e);
+  };
+  return {
+    onMouseDown: start, onMouseUp: cancel, onMouseLeave: cancel,
+    onTouchStart: start, onTouchEnd: cancel, onTouchCancel: cancel,
+    onClick: click,
+  };
+}
 
 // ─────────────────────────────────────────────────────────
 // ICONS
@@ -146,6 +1449,14 @@ const Icon = {
   Info:     (p) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" {...p}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
   Pin:      (p) => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" {...p}><path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" stroke="currentColor" strokeWidth="1.6"/><circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.6"/></svg>,
   Sparkle:  (p) => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" {...p}><path d="M12 3v6M12 15v6M3 12h6M15 12h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
+  Plus:     (p) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" {...p}><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
+  Pen:      (p) => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" {...p}><path d="M16 4 20 8l-11 11H5v-4L16 4Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>,
+  Trash:    (p) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" {...p}><path d="M5 7h14M10 7V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2M7 7l1 12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
+  Logout:   (p) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" {...p}><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 17l-5-5 5-5M5 12h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  Upload:   (p) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" {...p}><path d="M12 16V4m0 0-4 4m4-4 4 4M5 20h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  Camera:   (p) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" {...p}><path d="M4 8a2 2 0 0 1 2-2h2l1.5-2h5L16 6h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z" stroke="currentColor" strokeWidth="1.6"/><circle cx="12" cy="13" r="3.5" stroke="currentColor" strokeWidth="1.6"/></svg>,
+  Star:     (p) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" {...p}><path d="m12 3 2.6 5.6 6.1.6-4.6 4.2 1.3 6L12 16.8 6.6 19.4l1.3-6L3.3 9.2l6.1-.6L12 3Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/></svg>,
+  Check:    (p) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" {...p}><path d="m5 12 5 5L20 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
 };
 
 // ─────────────────────────────────────────────────────────
@@ -202,14 +1513,497 @@ function TabBar({ active = 'home', go, dark = false }) {
   );
 }
 
+// EditableText: shows pen icon to admins, swaps to <input> on click.
+function EditableText({ value, onSave, multiline = false, dark = false, placeholder = '', children }) {
+  const { isAdmin } = useAdmin();
+  const [editing, setEditing] = React.useState(false);
+  const [draft, setDraft] = React.useState(value == null ? '' : value);
+  React.useEffect(() => { setDraft(value == null ? '' : value); }, [value]);
+
+  if (!isAdmin) return <React.Fragment>{children != null ? children : value}</React.Fragment>;
+
+  if (editing) {
+    const commit = () => { onSave(draft); setEditing(false); };
+    const cancel = () => { setDraft(value == null ? '' : value); setEditing(false); };
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, width: '100%' }}>
+        {multiline ? (
+          <textarea autoFocus className="text-area" value={draft}
+            placeholder={placeholder}
+            onChange={e => setDraft(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Escape') cancel(); }}
+          />
+        ) : (
+          <input autoFocus className="text-input" value={draft}
+            placeholder={placeholder}
+            onChange={e => setDraft(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') cancel(); }}
+          />
+        )}
+        <span className="tap" onClick={commit} style={{ color: 'var(--accent)', minWidth: 28, minHeight: 28, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon.Check/>
+        </span>
+        <span className="tap" onClick={cancel} style={{ color: 'var(--ink-3)', minWidth: 28, minHeight: 28, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon.Close/>
+        </span>
+      </span>
+    );
+  }
+
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 4, maxWidth: '100%' }}>
+      <span>{children != null ? children : value}</span>
+      <span className={'editable-pen' + (dark ? ' dark' : '')} onClick={(e) => { e.stopPropagation(); setEditing(true); }}>
+        <Icon.Pen/>
+      </span>
+    </span>
+  );
+}
+
+function FAB({ onClick, label = '' }) {
+  return <div className="tap fab" onClick={onClick} aria-label={label}><Icon.Plus/></div>;
+}
+
+function AdminBar({ isAdmin, onLogout }) {
+  if (!isAdmin) return null;
+  return (
+    <div className="admin-bar">
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ width: 8, height: 8, borderRadius: 99, background: '#e6c89a' }}/>
+        管理モード
+      </span>
+      <span className="tap" onClick={onLogout} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'rgba(255,255,255,.85)' }}>
+        <Icon.Logout/> ログアウト
+      </span>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────
+// MODALS
+// ─────────────────────────────────────────────────────────
+function Modal({ children, onClose }) {
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal-card" onClick={e => e.stopPropagation()}>{children}</div>
+    </div>
+  );
+}
+
+function ConfirmModal({ title, message, confirmLabel = '削除', danger = true, onConfirm, onCancel }) {
+  return (
+    <Modal onClose={onCancel}>
+      <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 18, fontWeight: 500, marginBottom: 10 }}>{title}</div>
+      <div style={{ fontSize: 13, color: 'var(--ink-2)', lineHeight: 1.7, marginBottom: 22 }}>{message}</div>
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button className="btn-secondary" onClick={onCancel}>キャンセル</button>
+        <button className="btn-primary" onClick={onConfirm} style={danger ? { background: '#b13a2a' } : {}}>
+          {confirmLabel}
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
+function AdminLoginModal({ onClose }) {
+  const { config } = useConfig();
+  const { login } = useAdmin();
+  const [pw, setPw] = React.useState('');
+  const [err, setErr] = React.useState('');
+  const [shaking, shake] = useShake();
+  const [verifying, setVerifying] = React.useState(false);
+  const submit = async () => {
+    if (verifying) return;
+    setVerifying(true);
+    try {
+      const ok = await verifyPassphrase(pw, config.auth.adminPassphraseHash, config.auth.adminPassphraseSalt, config.auth.kdfIterations);
+      if (ok) { login(); onClose(); }
+      else { setErr('管理者パスワードが違います'); shake(); }
+    } catch (e) {
+      setErr(e.message || '認証エラー'); shake();
+    } finally {
+      setVerifying(false);
+    }
+  };
+  return (
+    <Modal onClose={onClose}>
+      <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 18, fontWeight: 500, marginBottom: 14 }}>管理者ログイン</div>
+      <div className={'form-row' + (shaking ? ' shake' : '')}>
+        <label className="form-label">管理者パスワード</label>
+        <input type="password" className="text-input" autoFocus value={pw} disabled={verifying}
+          onChange={e => { setPw(e.target.value); setErr(''); }}
+          onKeyDown={e => { if (e.key === 'Enter') submit(); }}/>
+        {err && <div style={{ color: '#b13a2a', fontSize: 12, marginTop: 6 }}>{err}</div>}
+      </div>
+      <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+        <button className="btn-secondary" onClick={onClose} disabled={verifying}>キャンセル</button>
+        <button className="btn-primary" onClick={submit} disabled={verifying}>{verifying ? '確認中…' : 'ログイン'}</button>
+      </div>
+      <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 14, lineHeight: 1.6 }}>
+        初期パスワードはセットアップ時のメモを参照してください。<strong>初回ログイン後はすぐに強いパスワードへ変更してください。</strong>
+      </div>
+    </Modal>
+  );
+}
+
+function PassphraseChangeModal({ kind, onClose }) {
+  const { config, updateConfig } = useConfig();
+  const isFamily = kind === 'family';
+  const hashKey = isFamily ? 'passphraseHash' : 'adminPassphraseHash';
+  const saltKey = isFamily ? 'passphraseSalt' : 'adminPassphraseSalt';
+  const titleText = isFamily ? '合言葉の変更' : '管理者パスワードの変更';
+  const [cur, setCur] = React.useState('');
+  const [n1, setN1] = React.useState('');
+  const [n2, setN2] = React.useState('');
+  const [err, setErr] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
+  const weakWarn = n1 && isWeakPassphrase(n1);
+  const submit = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const ok = await verifyPassphrase(cur, config.auth[hashKey], config.auth[saltKey], config.auth.kdfIterations);
+      if (!ok) { setErr('現在のパスワードが違います'); return; }
+      if (!n1) { setErr('新しいパスワードを入力してください'); return; }
+      if (n1 !== n2) { setErr('新しいパスワードが一致しません'); return; }
+      if (n1.length < 6) { setErr('新しいパスワードは6文字以上にしてください'); return; }
+      const entry = await makeAuthEntry(n1);
+      updateConfig(d => {
+        d.auth = d.auth || {};
+        d.auth[hashKey] = entry.hash;
+        d.auth[saltKey] = entry.salt;
+        d.auth.kdfIterations = KDF_ITERATIONS;
+        if (isFamily) d.auth.passphraseUpdatedAt = todayShort();
+      });
+      onClose();
+    } catch (e) {
+      setErr(e.message || '変更に失敗しました');
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Modal onClose={onClose}>
+      <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 18, fontWeight: 500, marginBottom: 14 }}>{titleText}</div>
+      <div className="form-row">
+        <label className="form-label">現在のパスワード</label>
+        <input type="password" className="text-input" value={cur} disabled={busy} onChange={e => { setCur(e.target.value); setErr(''); }}/>
+      </div>
+      <div className="form-row">
+        <label className="form-label">新しいパスワード</label>
+        <input type="password" className="text-input" value={n1} disabled={busy} onChange={e => { setN1(e.target.value); setErr(''); }}/>
+        {weakWarn && (
+          <div style={{ color: '#b1772a', fontSize: 11.5, marginTop: 6, lineHeight: 1.5 }}>
+            ⚠ 弱いパスワードです。8文字以上で、辞書に載っていない語をおすすめします。
+          </div>
+        )}
+      </div>
+      <div className="form-row">
+        <label className="form-label">確認</label>
+        <input type="password" className="text-input" value={n2} disabled={busy} onChange={e => { setN2(e.target.value); setErr(''); }}/>
+      </div>
+      {err && <div style={{ color: '#b13a2a', fontSize: 12, marginBottom: 10 }}>{err}</div>}
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button className="btn-secondary" onClick={onClose} disabled={busy}>キャンセル</button>
+        <button className="btn-primary" onClick={submit} disabled={busy}>{busy ? '処理中…' : '変更'}</button>
+      </div>
+    </Modal>
+  );
+}
+
+function CloudinarySettingsModal({ onClose }) {
+  const { config, updateConfig } = useConfig();
+  const [cn, setCn] = React.useState((config.cloudinary && config.cloudinary.cloudName) || '');
+  const [up, setUp] = React.useState((config.cloudinary && config.cloudinary.uploadPreset) || '');
+  const save = () => {
+    updateConfig(d => {
+      d.cloudinary = d.cloudinary || {};
+      d.cloudinary.cloudName = cn.trim();
+      d.cloudinary.uploadPreset = up.trim();
+    });
+    onClose();
+  };
+  return (
+    <Modal onClose={onClose}>
+      <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 18, fontWeight: 500, marginBottom: 4 }}>Cloudinary 設定</div>
+      <div style={{ fontSize: 12, color: 'var(--ink-3)', lineHeight: 1.7, marginBottom: 18 }}>
+        写真ストレージ用です。<a href="https://cloudinary.com/" target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>cloudinary.com</a> で無料アカウントを作成し、Settings → Upload で <b>Unsigned</b> プリセットを作ってください。
+      </div>
+      <div className="form-row">
+        <label className="form-label">クラウド名 (Cloud Name)</label>
+        <input className="text-input" value={cn} onChange={e => setCn(e.target.value)} placeholder="例: my-memoria"/>
+      </div>
+      <div className="form-row">
+        <label className="form-label">アップロードプリセット (Unsigned)</label>
+        <input className="text-input" value={up} onChange={e => setUp(e.target.value)} placeholder="例: memoria-unsigned"/>
+      </div>
+      <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+        <button className="btn-secondary" onClick={onClose}>キャンセル</button>
+        <button className="btn-primary" onClick={save}>保存</button>
+      </div>
+    </Modal>
+  );
+}
+
+function AlbumEditorModal({ mode, album, onClose }) {
+  const { updateConfig } = useConfig();
+  const [title, setTitle] = React.useState((album && album.title) || '');
+  const [subtitle, setSubtitle] = React.useState((album && album.subtitle) || '');
+  const [date, setDate] = React.useState((album && album.date) || '');
+  const [desc, setDesc] = React.useState((album && album.desc) || '');
+  const [err, setErr] = React.useState('');
+  const isEdit = mode === 'edit';
+
+  const submit = () => {
+    if (!title.trim()) return setErr('タイトルは必須です');
+    const yearMatch = String(date).match(/(\d{4})/);
+    const year = yearMatch ? parseInt(yearMatch[1], 10) : new Date().getFullYear();
+    if (isEdit) {
+      updateConfig(d => {
+        const a = d.albums.find(x => x.id === album.id);
+        if (a) {
+          a.title = title.trim();
+          a.subtitle = subtitle.trim();
+          a.date = date.trim();
+          a.year = year;
+          a.desc = desc.trim();
+        }
+      });
+    } else {
+      const id = newId('alb');
+      updateConfig(d => {
+        d.albums.unshift({
+          id, title: title.trim(), subtitle: subtitle.trim(),
+          date: date.trim(), year, desc: desc.trim(),
+          coverPhotoId: null, photos: [],
+        });
+      });
+    }
+    onClose();
+  };
+
+  return (
+    <Modal onClose={onClose}>
+      <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 18, fontWeight: 500, marginBottom: 16 }}>
+        {isEdit ? 'アルバムを編集' : '新しいアルバム'}
+      </div>
+      <div className="form-row">
+        <label className="form-label">タイトル<span style={{ color: '#b13a2a' }}> *</span></label>
+        <input className="text-input" value={title} autoFocus onChange={e => { setTitle(e.target.value); setErr(''); }} placeholder="例: 沖縄、家族旅行"/>
+      </div>
+      <div className="form-row">
+        <label className="form-label">サブタイトル</label>
+        <input className="text-input" value={subtitle} onChange={e => setSubtitle(e.target.value)} placeholder="例: Okinawa, Japan"/>
+      </div>
+      <div className="form-row">
+        <label className="form-label">日付</label>
+        <input className="text-input" value={date} onChange={e => setDate(e.target.value)} placeholder="例: 2026.01 / 通年"/>
+      </div>
+      <div className="form-row">
+        <label className="form-label">説明</label>
+        <textarea className="text-area" value={desc} onChange={e => setDesc(e.target.value)} placeholder="このアルバムについての一言..."/>
+      </div>
+      {err && <div style={{ color: '#b13a2a', fontSize: 12, marginBottom: 10 }}>{err}</div>}
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button className="btn-secondary" onClick={onClose}>キャンセル</button>
+        <button className="btn-primary" onClick={submit}>{isEdit ? '保存' : '作成'}</button>
+      </div>
+    </Modal>
+  );
+}
+
+function PhotoUploaderModal({ albumId, onClose }) {
+  const { config, updateConfig } = useConfig();
+  const cloud = config.cloudinary || {};
+  const fileRef = React.useRef(null);
+  const [files, setFiles] = React.useState([]);
+  const [busy, setBusy] = React.useState(false);
+  const [progress, setProgress] = React.useState(0);
+  const [err, setErr] = React.useState('');
+  const [doneCount, setDoneCount] = React.useState(0);
+
+  const ready = !!(cloud.cloudName && cloud.uploadPreset);
+
+  const pick = () => fileRef.current && fileRef.current.click();
+  const onChange = (e) => {
+    setFiles(Array.from(e.target.files || []));
+    setErr('');
+  };
+
+  const upload = async () => {
+    if (!ready) { setErr('先に Cloudinary 設定を入力してください。'); return; }
+    if (!files.length) { setErr('ファイルを選んでください。'); return; }
+    setBusy(true); setErr(''); setDoneCount(0);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        setProgress(0);
+        const r = await uploadToCloudinary(files[i], cloud, p => setProgress(p));
+        updateConfig(d => {
+          const a = d.albums.find(x => x.id === albumId);
+          if (!a) return;
+          if (!a.photos) a.photos = [];
+          const photo = { id: newId('p'), src: r.src, date: todayShort(), caption: '' };
+          a.photos.push(photo);
+          if (!a.coverPhotoId) a.coverPhotoId = photo.id;
+        });
+        setDoneCount(i + 1);
+      }
+      onClose();
+    } catch (e) {
+      setErr(e.message || 'アップロードに失敗しました。');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Modal onClose={busy ? undefined : onClose}>
+      <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 18, fontWeight: 500, marginBottom: 14 }}>写真を追加</div>
+      {!ready && (
+        <div style={{ background: 'rgba(177,58,42,.08)', border: '1px solid rgba(177,58,42,.25)',
+          color: '#7a2818', borderRadius: 10, padding: '10px 12px', fontSize: 12, marginBottom: 14, lineHeight: 1.6 }}>
+          Cloudinary 設定が未入力です。設定 → Cloudinary 設定 から先に入力してください。
+        </div>
+      )}
+      <input ref={fileRef} type="file" accept="image/*" multiple onChange={onChange} style={{ display: 'none' }}/>
+      <button className="btn-secondary" onClick={pick} disabled={busy} style={{ marginBottom: 14 }}>
+        <Icon.Upload/> ファイルを選ぶ
+      </button>
+      {files.length > 0 && (
+        <div style={{ fontSize: 12, color: 'var(--ink-2)', marginBottom: 14 }}>
+          {files.length}枚 選択中
+          {busy && (
+            <div style={{ marginTop: 8 }}>
+              <div className="progress-track"><div className="progress-fill" style={{ width: `${Math.round(progress * 100)}%` }}/></div>
+              <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 4 }}>{doneCount} / {files.length} 完了</div>
+            </div>
+          )}
+        </div>
+      )}
+      {err && <div style={{ color: '#b13a2a', fontSize: 12, marginBottom: 10 }}>{err}</div>}
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button className="btn-secondary" onClick={onClose} disabled={busy}>キャンセル</button>
+        <button className="btn-primary" onClick={upload} disabled={busy || !files.length}>
+          {busy ? 'アップロード中…' : 'アップロード'}
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
+function PublishModal({ onClose }) {
+  const { config, replaceConfig, resetConfig } = useConfig();
+  const fileRef = React.useRef(null);
+  const [busy, setBusy] = React.useState(false);
+  const [msg, setMsg] = React.useState('');
+  const [err, setErr] = React.useState('');
+
+  const onPublish = async () => {
+    setBusy(true); setErr(''); setMsg('');
+    try {
+      await publishHTML(config);
+      setMsg('Memoria.html をダウンロードしました。リポジトリのファイルを上書き → git push で公開できます。');
+    } catch (e) {
+      setErr(e.message || '書き出しに失敗しました');
+    } finally { setBusy(false); }
+  };
+
+  const exportJSON = () => downloadJSON('memoria-config.json', config);
+  const importJSON = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const obj = JSON.parse(String(reader.result));
+        const merged = mergeConfig(DEFAULT_MEMORIA_CONFIG, obj);
+        replaceConfig(merged);
+        setMsg('設定を読み込みました。');
+      } catch (er) { setErr('JSONの読み込みに失敗しました: ' + er.message); }
+    };
+    reader.readAsText(file);
+  };
+
+  return (
+    <Modal onClose={busy ? undefined : onClose}>
+      <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 18, fontWeight: 500, marginBottom: 14 }}>公開・書き出し</div>
+      <div style={{ fontSize: 12.5, color: 'var(--ink-2)', lineHeight: 1.7, marginBottom: 14 }}>
+        現在の編集内容を <code style={{ background: 'var(--bg-soft)', padding: '1px 6px', borderRadius: 4 }}>Memoria.html</code> に書き出します。ダウンロード後、リポジトリの同名ファイルを上書きし <code style={{ background: 'var(--bg-soft)', padding: '1px 6px', borderRadius: 4 }}>git push</code> で公開されます。
+      </div>
+      <button className="btn-primary" onClick={onPublish} disabled={busy} style={{ marginBottom: 14 }}>
+        <Icon.Down/> 公開用 HTML をダウンロード
+      </button>
+      <div style={{ height: 1, background: 'var(--line)', margin: '10px 0 14px' }}/>
+      <div style={{ fontSize: 11, letterSpacing: '.12em', color: 'var(--ink-3)', textTransform: 'uppercase', marginBottom: 8 }}>設定の入出力 (JSON)</div>
+      <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
+        <button className="btn-secondary" onClick={exportJSON}>エクスポート</button>
+        <input ref={fileRef} type="file" accept="application/json" onChange={importJSON} style={{ display: 'none' }}/>
+        <button className="btn-secondary" onClick={() => fileRef.current && fileRef.current.click()}>インポート</button>
+      </div>
+      <button className="btn-secondary" onClick={() => { if (confirm('すべての編集内容を破棄して初期状態に戻しますか？')) { resetConfig(); setMsg('初期化しました。'); } }}>
+        初期状態に戻す
+      </button>
+      {msg && <div style={{ color: 'var(--accent)', fontSize: 12, marginTop: 12 }}>{msg}</div>}
+      {err && <div style={{ color: '#b13a2a', fontSize: 12, marginTop: 12 }}>{err}</div>}
+      <div style={{ marginTop: 16 }}>
+        <button className="btn-secondary" onClick={onClose} disabled={busy}>閉じる</button>
+      </div>
+    </Modal>
+  );
+}
+
+function LongPressMenu({ items, onClose }) {
+  return (
+    <div className="modal-backdrop" onClick={onClose} style={{ alignItems: 'flex-end', padding: 0 }}>
+      <div className="longpress-menu" onClick={e => e.stopPropagation()}>
+        {items.map((it, i) => (
+          <div key={i} className={'row tap' + (it.danger ? ' danger' : '')} onClick={() => { it.onClick(); onClose(); }}>
+            <span style={{ width: 28, display: 'inline-flex', justifyContent: 'center' }}>{it.icon}</span>
+            {it.label}
+          </div>
+        ))}
+        <div className="row tap" onClick={onClose} style={{ color: 'var(--ink-3)', justifyContent: 'center' }}>キャンセル</div>
+      </div>
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────
 // LOCK SCREEN
 // ─────────────────────────────────────────────────────────
 function ScreenLock({ go }) {
+  const { config, updateConfig } = useConfig();
+  const lock = config.lock;
+  const albums = config.albums;
+  const lockBg = albums.length ? coverUrl(albums.find(a => a.id === 'family') || albums[2] || albums[0], 'full') : '';
+  const [pw, setPw] = React.useState('');
+  const [shaking, shake] = useShake();
+  const [err, setErr] = React.useState('');
+  const [verifying, setVerifying] = React.useState(false);
+
+  const submit = async () => {
+    if (verifying) return;
+    if (!pw) { setErr('合言葉を入力してください'); shake(); return; }
+    setVerifying(true);
+    try {
+      const ok = await verifyPassphrase(pw, config.auth.passphraseHash, config.auth.passphraseSalt, config.auth.kdfIterations);
+      if (ok) {
+        try { sessionStorage.setItem(UNLOCK_KEY, '1'); } catch (e) {}
+        go('home');
+      } else {
+        setErr('合言葉が違います'); shake();
+      }
+    } catch (e) {
+      setErr(e.message || '認証エラー'); shake();
+    } finally {
+      setVerifying(false);
+    }
+  };
+
   return (
     <div className="screen-enter" style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', inset: 0,
-        background: 'url(project/placeholders/family-1-lg.svg) center/cover',
+        background: `url(${lockBg}) center/cover, #2a221a`,
         filter: 'blur(10px) saturate(.85)', transform: 'scale(1.15)' }}/>
       <div style={{ position: 'absolute', inset: 0, background:
         'linear-gradient(180deg, rgba(40,28,18,.40) 0%, rgba(40,28,18,.65) 60%, rgba(30,20,12,.92) 100%)' }}/>
@@ -222,43 +2016,55 @@ function ScreenLock({ go }) {
             background: 'rgba(255,255,255,.14)', border: '1px solid rgba(255,255,255,.22)',
             backdropFilter: 'blur(10px)', fontSize: 10.5, letterSpacing: '.18em', textTransform: 'uppercase',
             color: 'rgba(255,255,255,.92)', marginBottom: 32 }}>
-            <Icon.Lock/> Family Only · 限定公開
+            <Icon.Lock/>
+            <EditableText value={lock.badge} dark onSave={v => updateConfig(d => { d.lock.badge = v; })}/>
           </div>
           <div style={{
             fontFamily: "'Shippori Mincho','Hiragino Mincho ProN',serif",
             fontSize: 50, lineHeight: 1.08, fontWeight: 500, marginBottom: 14, letterSpacing: '.01em',
           }}>
-            記憶を、<br/>
-            そっと<br/>
-            ひらく。
+            <div><EditableText value={lock.headline1} dark onSave={v => updateConfig(d => { d.lock.headline1 = v; })}/></div>
+            <div><EditableText value={lock.headline2} dark onSave={v => updateConfig(d => { d.lock.headline2 = v; })}/></div>
+            <div><EditableText value={lock.headline3} dark onSave={v => updateConfig(d => { d.lock.headline3 = v; })}/></div>
           </div>
           <div style={{ fontFamily: "'Cormorant Garamond',serif",
             fontStyle: 'italic', fontSize: 22, opacity: .8, marginBottom: 28, letterSpacing: '.03em' }}>
-            Memoria — a private archive
+            <EditableText value={lock.tagline} dark onSave={v => updateConfig(d => { d.lock.tagline = v; })}/>
           </div>
           <div style={{ fontSize: 13.5, lineHeight: 1.85, color: 'rgba(255,255,255,.78)', maxWidth: 280 }}>
-            家族と、ほんとうに親しい人だけのための、<br/>
-            旅と日々の写真集です。
+            <div><EditableText value={lock.note1} dark onSave={v => updateConfig(d => { d.lock.note1 = v; })}/></div>
+            <div><EditableText value={lock.note2} dark onSave={v => updateConfig(d => { d.lock.note2 = v; })}/></div>
           </div>
         </div>
 
         <div>
-          <div className="tap" onClick={() => go('home')} style={{
+          <div className={shaking ? 'shake' : ''} style={{
             display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px',
-            background: 'rgba(255,255,255,.92)', borderRadius: 14, marginBottom: 12,
-            color: 'var(--ink)' }}>
+            background: 'rgba(255,255,255,.92)', borderRadius: 14, marginBottom: 12, color: 'var(--ink)' }}>
             <div style={{ width: 36, height: 36, borderRadius: 12, background: 'var(--bg-soft)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
               <Icon.User/>
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 11, color: 'var(--ink-3)', letterSpacing: '.06em' }}>合言葉でひらく</div>
-              <div style={{ fontSize: 14, fontWeight: 500 }}>·  ·  ·  ·  ·  ·</div>
+              <input type="password" value={pw} disabled={verifying}
+                onChange={e => { setPw(e.target.value); setErr(''); }}
+                onKeyDown={e => { if (e.key === 'Enter') submit(); }}
+                placeholder="· · · · · ·"
+                style={{
+                  width: '100%', border: 'none', outline: 'none',
+                  background: 'transparent', fontSize: 14, fontWeight: 500,
+                  color: 'var(--ink)', padding: 0, letterSpacing: '.16em',
+                  opacity: verifying ? 0.6 : 1,
+                }}/>
             </div>
-            <Icon.ChevR style={{ color: 'var(--ink-3)' }}/>
+            <div className="tap" onClick={verifying ? undefined : submit} style={{ minWidth: 32, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', opacity: verifying ? 0.4 : 1, pointerEvents: verifying ? 'none' : 'auto' }}>
+              <Icon.ChevR/>
+            </div>
           </div>
+          {err && <div style={{ textAlign: 'center', fontSize: 11.5, color: '#f3c8b8', marginBottom: 8, letterSpacing: '.04em' }}>{err}</div>}
           <div style={{ textAlign: 'center', fontSize: 12, color: 'rgba(255,255,255,.6)', letterSpacing: '.05em' }}>
-            招待された方のみ閲覧できます
+            <EditableText value={lock.invite} dark onSave={v => updateConfig(d => { d.lock.invite = v; })}/>
           </div>
         </div>
       </div>
@@ -269,17 +2075,18 @@ function ScreenLock({ go }) {
 // ─────────────────────────────────────────────────────────
 // HOME SCREEN
 // ─────────────────────────────────────────────────────────
-function AlbumCard({ album, go }) {
+function AlbumCard({ album, go, onLongPress }) {
+  const handlers = useLongPress(onLongPress, () => go('album', { albumId: album.id }));
   return (
-    <div className="tap" onClick={() => go('album', { albumId: album.id })}
+    <div className="tap" {...handlers}
       style={{ borderRadius: 16, overflow: 'hidden', background: 'var(--bg-elev)',
         border: '1px solid var(--line)', boxShadow: 'var(--shadow-1)' }}>
       <div style={{ position: 'relative', aspectRatio: '4 / 5',
-        background: `url(project/placeholders/${album.cover}-lg.svg) center/cover` }}>
+        background: `url(${coverUrl(album, 'full')}) center/cover, var(--bg-soft)` }}>
         <div style={{ position: 'absolute', top: 8, right: 8,
           padding: '3px 8px', borderRadius: 999, fontSize: 10, letterSpacing: '.04em',
           background: 'rgba(255,255,255,.85)', color: 'var(--ink-2)', backdropFilter: 'blur(6px)' }}>
-          {album.count}
+          {album.photos ? album.photos.length : 0}
         </div>
       </div>
       <div style={{ padding: '10px 12px 12px' }}>
@@ -293,8 +2100,39 @@ function AlbumCard({ album, go }) {
 }
 
 function ScreenHome({ go }) {
-  const featured = ALBUMS[0];
-  const others = ALBUMS.slice(1, 5);
+  const { config, updateConfig } = useConfig();
+  const { isAdmin } = useAdmin();
+  const albums = config.albums;
+  const home = config.home;
+  const featured = albums[0];
+  const others = albums.slice(1, 5);
+  const [longPressTarget, setLongPressTarget] = React.useState(null);
+  const [editorMode, setEditorMode] = React.useState(null);
+  const [editorAlbum, setEditorAlbum] = React.useState(null);
+  const [confirmDelete, setConfirmDelete] = React.useState(null);
+
+  const yearMap = new Map();
+  albums.forEach(a => {
+    if (!yearMap.has(a.year)) yearMap.set(a.year, { y: a.year, count: 0, sample: a });
+    yearMap.get(a.year).count += a.photos ? a.photos.length : 0;
+  });
+  const yearStrip = [...yearMap.values()].sort((a,b) => b.y - a.y).slice(0, 4);
+
+  const totalPhotos = totalPhotosOf(albums);
+
+  if (!featured) {
+    return (
+      <div className="screen-enter" style={{ height: '100%', position: 'relative', background: 'var(--bg)' }}>
+        <div style={{ padding: '80px 22px', textAlign: 'center', color: 'var(--ink-3)' }}>
+          <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 20, marginBottom: 8, color: 'var(--ink)' }}>アルバムがありません</div>
+          {isAdmin ? '右下の + ボタンから最初のアルバムを追加してください。' : '管理者がアルバムを追加するまでお待ちください。'}
+        </div>
+        {isAdmin && <FAB onClick={() => setEditorMode('create')}/>}
+        {editorMode && <AlbumEditorModal mode="create" onClose={() => setEditorMode(null)}/>}
+        <TabBar active="home" go={go}/>
+      </div>
+    );
+  }
 
   return (
     <div className="screen-enter" style={{ height: '100%', overflow: 'hidden', position: 'relative', background: 'var(--bg)' }}>
@@ -302,11 +2140,17 @@ function ScreenHome({ go }) {
         <div style={{ padding: '64px 22px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: 10.5, letterSpacing: '.22em', textTransform: 'uppercase',
-              color: 'var(--ink-3)', marginBottom: 4 }}>Family Archive</div>
+              color: 'var(--ink-3)', marginBottom: 4 }}>
+              <EditableText value={home.eyebrow} onSave={v => updateConfig(d => { d.home.eyebrow = v; })}/>
+            </div>
             <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 30, fontWeight: 500,
-              letterSpacing: '.01em', color: 'var(--ink)' }}>記憶 <span style={{
-                fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic', fontSize: 26,
-                color: 'var(--accent)', marginLeft: 4 }}>Memoria</span></div>
+              letterSpacing: '.01em', color: 'var(--ink)' }}>
+              <EditableText value={config.site.brandName} onSave={v => updateConfig(d => { d.site.brandName = v; })}/>{' '}
+              <span style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic', fontSize: 26,
+                color: 'var(--accent)', marginLeft: 4 }}>
+                <EditableText value={config.site.brandNameLatin} onSave={v => updateConfig(d => { d.site.brandNameLatin = v; })}/>
+              </span>
+            </div>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <RoundBtn onClick={() => go('search')}><Icon.Search/></RoundBtn>
@@ -314,15 +2158,17 @@ function ScreenHome({ go }) {
         </div>
 
         <div style={{ padding: '4px 22px 20px', fontSize: 13, color: 'var(--ink-2)', letterSpacing: '.04em' }}>
-          おかえりなさい、<span style={{ color: 'var(--accent)' }}>みらいさん</span>。<br/>
-          <span style={{ color: 'var(--ink-3)' }}>新しい写真が <b style={{ color: 'var(--ink)' }}>12枚</b> 届いています。</span>
+          おかえりなさい、<span style={{ color: 'var(--accent)' }}>
+            <EditableText value={home.name} onSave={v => updateConfig(d => { d.home.name = v; })}/>
+          </span>さん。<br/>
+          <span style={{ color: 'var(--ink-3)' }}>新しい写真が <b style={{ color: 'var(--ink)' }}>{home.newPhotoCount != null ? home.newPhotoCount : 0}枚</b> 届いています。</span>
         </div>
 
         <div style={{ padding: '0 18px 22px' }}>
           <div className="tap" onClick={() => go('album', { albumId: featured.id })}
             style={{ position: 'relative', borderRadius: 22, overflow: 'hidden',
               aspectRatio: '4 / 5',
-              background: `url(project/placeholders/${featured.cover}-lg.svg) center/cover`,
+              background: `url(${coverUrl(featured, 'full')}) center/cover, var(--bg-soft)`,
               boxShadow: 'var(--shadow-2)' }}>
             <div style={{ position: 'absolute', inset: 0,
               background: 'linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(20,12,6,.65) 100%)' }}/>
@@ -331,14 +2177,14 @@ function ScreenHome({ go }) {
             </div>
             <div style={{ position: 'absolute', left: 18, right: 18, bottom: 18, color: '#fff' }}>
               <div style={{ fontSize: 11, letterSpacing: '.18em', opacity: .85, marginBottom: 6 }}>
-                {featured.subtitle.toUpperCase()} · {featured.date}
+                {String(featured.subtitle || '').toUpperCase()} · {featured.date}
               </div>
               <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 26, fontWeight: 500,
                 lineHeight: 1.2, marginBottom: 6 }}>{featured.title}</div>
               <div style={{ fontSize: 12.5, opacity: .85, lineHeight: 1.6 }}>{featured.desc}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10,
                 fontSize: 11.5, opacity: .8 }}>
-                <Icon.Pin/> {featured.subtitle.split(',')[0]} · {featured.count}枚
+                <Icon.Pin/> {(featured.subtitle || '').split(',')[0]} · {featured.photos ? featured.photos.length : 0}枚
               </div>
             </div>
           </div>
@@ -348,8 +2194,9 @@ function ScreenHome({ go }) {
           <div>
             <div style={{ fontSize: 10.5, letterSpacing: '.22em', textTransform: 'uppercase',
               color: 'var(--ink-3)', marginBottom: 2 }}>Albums</div>
-            <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 19, fontWeight: 500,
-              color: 'var(--ink)' }}>旅とできごと</div>
+            <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 19, fontWeight: 500, color: 'var(--ink)' }}>
+              <EditableText value={home.sectionAlbumsLabel} onSave={v => updateConfig(d => { d.home.sectionAlbumsLabel = v; })}/>
+            </div>
           </div>
           <div className="tap" onClick={() => go('albums-list')}
             style={{ fontSize: 12, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -358,45 +2205,59 @@ function ScreenHome({ go }) {
         </div>
 
         <div style={{ padding: '0 18px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          {others.map(a => <AlbumCard key={a.id} album={a} go={go}/>)}
+          {others.map(a => <AlbumCard key={a.id} album={a} go={go}
+            onLongPress={isAdmin ? () => setLongPressTarget(a) : undefined}/>)}
         </div>
 
         <div style={{ padding: '28px 22px 12px' }}>
           <div style={{ fontSize: 10.5, letterSpacing: '.22em', textTransform: 'uppercase',
             color: 'var(--ink-3)', marginBottom: 2 }}>By Year</div>
-          <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 19, fontWeight: 500,
-            color: 'var(--ink)' }}>年で振り返る</div>
+          <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 19, fontWeight: 500, color: 'var(--ink)' }}>
+            <EditableText value={home.sectionYearsLabel} onSave={v => updateConfig(d => { d.home.sectionYearsLabel = v; })}/>
+          </div>
         </div>
         <div style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '4px 18px 4px' }}>
-          {[2026, 2025, 2024, 2023].map((y, i) => {
-            const aid = ['kyoto', 'okinawa', 'paris', 'hawaii'][i];
-            const a = ALBUMS.find(x => x.id === aid);
-            return (
-              <div key={y} className="tap" onClick={() => go('years')} style={{
-                minWidth: 116, height: 142, borderRadius: 16, position: 'relative', overflow: 'hidden',
-                background: `url(project/placeholders/${a.cover}-lg.svg) center/cover`,
-                boxShadow: 'var(--shadow-1)', flexShrink: 0,
-              }}>
-                <div style={{ position: 'absolute', inset: 0,
-                  background: 'linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(20,12,6,.7) 100%)' }}/>
-                <div style={{ position: 'absolute', left: 10, bottom: 10, color: '#fff' }}>
-                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 26, lineHeight: 1, fontWeight: 500 }}>{y}</div>
-                  <div style={{ fontSize: 10.5, opacity: .85, marginTop: 2 }}>
-                    {[3, 4, 2, 1][i]}冊 · {[42, 56, 24, 8][i]}枚
-                  </div>
+          {yearStrip.map(({ y, count, sample }) => (
+            <div key={y} className="tap" onClick={() => go('years')} style={{
+              minWidth: 116, height: 142, borderRadius: 16, position: 'relative', overflow: 'hidden',
+              background: `url(${coverUrl(sample, 'full')}) center/cover, var(--bg-soft)`,
+              boxShadow: 'var(--shadow-1)', flexShrink: 0,
+            }}>
+              <div style={{ position: 'absolute', inset: 0,
+                background: 'linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(20,12,6,.7) 100%)' }}/>
+              <div style={{ position: 'absolute', left: 10, bottom: 10, color: '#fff' }}>
+                <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 26, lineHeight: 1, fontWeight: 500 }}>{y}</div>
+                <div style={{ fontSize: 10.5, opacity: .85, marginTop: 2 }}>
+                  {albums.filter(a => a.year === y).length}冊 · {count}枚
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
 
         <div style={{ padding: '32px 22px 12px', textAlign: 'center', fontSize: 11,
           color: 'var(--ink-3)', letterSpacing: '.08em' }}>
           <div style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic',
             fontSize: 13, marginBottom: 4 }}>— a quiet place —</div>
-          全 {TOTAL_PHOTOS} 枚 · 7 アルバム
+          全 {totalPhotos} 枚 · {albums.length} アルバム
         </div>
       </div>
+      {isAdmin && <FAB onClick={() => { setEditorAlbum(null); setEditorMode('create'); }} label="新しいアルバム"/>}
+      {editorMode && <AlbumEditorModal mode={editorMode} album={editorAlbum} onClose={() => { setEditorMode(null); setEditorAlbum(null); }}/>}
+      {longPressTarget && (
+        <LongPressMenu onClose={() => setLongPressTarget(null)} items={[
+          { icon: <Icon.Pen/>, label: 'アルバムを編集', onClick: () => { setEditorAlbum(longPressTarget); setEditorMode('edit'); } },
+          { icon: <Icon.Trash/>, label: 'アルバムを削除', danger: true, onClick: () => setConfirmDelete(longPressTarget) },
+        ]}/>
+      )}
+      {confirmDelete && (
+        <ConfirmModal title="アルバムを削除" message={`「${confirmDelete.title}」を削除しますか？写真情報も失われます。`}
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={() => {
+            updateConfig(d => { d.albums = d.albums.filter(a => a.id !== confirmDelete.id); });
+            setConfirmDelete(null);
+          }}/>
+      )}
       <TabBar active="home" go={go}/>
     </div>
   );
@@ -405,7 +2266,41 @@ function ScreenHome({ go }) {
 // ─────────────────────────────────────────────────────────
 // ALBUMS LIST
 // ─────────────────────────────────────────────────────────
+function AlbumListRow({ album, go, onLongPress }) {
+  const handlers = useLongPress(onLongPress, () => go('album', { albumId: album.id }));
+  return (
+    <div className="tap" {...handlers}
+      style={{ display: 'flex', gap: 14, alignItems: 'stretch',
+        background: 'var(--bg-elev)', border: '1px solid var(--line)',
+        borderRadius: 16, padding: 10, boxShadow: 'var(--shadow-1)' }}>
+      <div style={{ width: 96, height: 120, borderRadius: 10, flexShrink: 0,
+        background: `url(${coverUrl(album, 'full')}) center/cover, var(--bg-soft)` }}/>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '4px 4px 4px 0', minWidth: 0 }}>
+        <div style={{ fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase',
+          color: 'var(--ink-3)', marginBottom: 4 }}>{album.subtitle} · {album.date}</div>
+        <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 17, fontWeight: 500,
+          color: 'var(--ink)', marginBottom: 6, lineHeight: 1.25 }}>{album.title}</div>
+        <div style={{ fontSize: 11.5, color: 'var(--ink-2)', lineHeight: 1.55,
+          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{album.desc}</div>
+        <div style={{ flex: 1 }}/>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>{album.photos ? album.photos.length : 0}枚</span>
+          <Icon.ChevR style={{ color: 'var(--ink-3)' }}/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ScreenAlbumsList({ go }) {
+  const { config, updateConfig } = useConfig();
+  const { isAdmin } = useAdmin();
+  const albums = config.albums;
+  const [longPressTarget, setLongPressTarget] = React.useState(null);
+  const [editorMode, setEditorMode] = React.useState(null);
+  const [editorAlbum, setEditorAlbum] = React.useState(null);
+  const [confirmDelete, setConfirmDelete] = React.useState(null);
+
   return (
     <div className="screen-enter" style={{ height: '100%', overflow: 'hidden', position: 'relative', background: 'var(--bg)' }}>
       <div style={{ height: '100%', overflow: 'auto', paddingBottom: 110 }}>
@@ -429,30 +2324,28 @@ function ScreenAlbumsList({ go }) {
         </div>
 
         <div style={{ padding: '0 18px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {ALBUMS.map(a => (
-            <div key={a.id} className="tap" onClick={() => go('album', { albumId: a.id })}
-              style={{ display: 'flex', gap: 14, alignItems: 'stretch',
-                background: 'var(--bg-elev)', border: '1px solid var(--line)',
-                borderRadius: 16, padding: 10, boxShadow: 'var(--shadow-1)' }}>
-              <div style={{ width: 96, height: 120, borderRadius: 10, flexShrink: 0,
-                background: `url(project/placeholders/${a.cover}-lg.svg) center/cover` }}/>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '4px 4px 4px 0', minWidth: 0 }}>
-                <div style={{ fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase',
-                  color: 'var(--ink-3)', marginBottom: 4 }}>{a.subtitle} · {a.date}</div>
-                <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 17, fontWeight: 500,
-                  color: 'var(--ink)', marginBottom: 6, lineHeight: 1.25 }}>{a.title}</div>
-                <div style={{ fontSize: 11.5, color: 'var(--ink-2)', lineHeight: 1.55,
-                  display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.desc}</div>
-                <div style={{ flex: 1 }}/>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>{a.count}枚</span>
-                  <Icon.ChevR style={{ color: 'var(--ink-3)' }}/>
-                </div>
-              </div>
-            </div>
+          {albums.map(a => (
+            <AlbumListRow key={a.id} album={a} go={go}
+              onLongPress={isAdmin ? () => setLongPressTarget(a) : undefined}/>
           ))}
         </div>
       </div>
+      {isAdmin && <FAB onClick={() => { setEditorAlbum(null); setEditorMode('create'); }} label="新しいアルバム"/>}
+      {editorMode && <AlbumEditorModal mode={editorMode} album={editorAlbum} onClose={() => { setEditorMode(null); setEditorAlbum(null); }}/>}
+      {longPressTarget && (
+        <LongPressMenu onClose={() => setLongPressTarget(null)} items={[
+          { icon: <Icon.Pen/>, label: 'アルバムを編集', onClick: () => { setEditorAlbum(longPressTarget); setEditorMode('edit'); } },
+          { icon: <Icon.Trash/>, label: 'アルバムを削除', danger: true, onClick: () => setConfirmDelete(longPressTarget) },
+        ]}/>
+      )}
+      {confirmDelete && (
+        <ConfirmModal title="アルバムを削除" message={`「${confirmDelete.title}」を削除しますか？写真情報も失われます。`}
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={() => {
+            updateConfig(d => { d.albums = d.albums.filter(a => a.id !== confirmDelete.id); });
+            setConfirmDelete(null);
+          }}/>
+      )}
       <TabBar active="home" go={go}/>
     </div>
   );
@@ -461,7 +2354,26 @@ function ScreenAlbumsList({ go }) {
 // ─────────────────────────────────────────────────────────
 // ALBUM DETAIL
 // ─────────────────────────────────────────────────────────
-function DateGroup({ photos, date, albumId, go }) {
+function PhotoTile({ photo, isFirst, albumId, go, onLongPress }) {
+  const handlers = useLongPress(onLongPress, () => go('lightbox', { albumId, photoIndex: photo._idx }));
+  const span = isFirst ? '1 / -1' : 'auto';
+  const ratio = isFirst ? '4 / 3' : '1 / 1';
+  return (
+    <div className="tap" {...handlers}
+      style={{ gridColumn: span, position: 'relative',
+        aspectRatio: ratio, borderRadius: 10, overflow: 'hidden',
+        background: `url(${imgUrl(photo.src, 'mid')}) center/cover, var(--bg-soft)`,
+        boxShadow: 'var(--shadow-1)' }}>
+      {isFirst && (
+        <div style={{ position: 'absolute', left: 10, bottom: 8, fontSize: 10,
+          color: '#fff', letterSpacing: '.06em',
+          textShadow: '0 1px 6px rgba(0,0,0,.5)' }}>{photo.date}</div>
+      )}
+    </div>
+  );
+}
+
+function DateGroup({ photos, date, albumId, go, onPhotoLongPress }) {
   return (
     <div style={{ marginBottom: 18 }}>
       <div style={{ padding: '4px 22px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -471,64 +2383,68 @@ function DateGroup({ photos, date, albumId, go }) {
         <span style={{ flex: 1, height: 1, background: 'var(--line)' }}/>
       </div>
       <div style={{ padding: '0 14px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-        {photos.map((p, i) => {
-          const span = i === 0 ? '1 / -1' : 'auto';
-          const ratio = i === 0 ? '4 / 3' : '1 / 1';
-          const isVideo = i === 2 || i === 5;
-          return (
-            <div key={p.id} className="tap"
-              onClick={() => go(isVideo ? 'video-lightbox' : 'lightbox', { albumId, photoIndex: p.globalIndex })}
-              style={{ gridColumn: span, position: 'relative',
-                aspectRatio: ratio, borderRadius: 10, overflow: 'hidden',
-                background: `url(${p.thumb}) center/cover`, boxShadow: 'var(--shadow-1)' }}>
-              {i === 0 && (
-                <div style={{ position: 'absolute', left: 10, bottom: 8, fontSize: 10,
-                  color: '#fff', letterSpacing: '.06em',
-                  textShadow: '0 1px 6px rgba(0,0,0,.5)' }}>{p.date}</div>
-              )}
-              {isVideo && (
-                <React.Fragment>
-                  <div style={{ position: 'absolute', inset: 0,
-                    background: 'linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,.35) 100%)' }}/>
-                  <div style={{ position: 'absolute', top: '50%', left: '50%',
-                    transform: 'translate(-50%,-50%)', width: 38, height: 38, borderRadius: 999,
-                    background: 'rgba(255,255,255,.88)', backdropFilter: 'blur(8px)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 4px 12px rgba(0,0,0,.25)' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="#2a221a"/></svg>
-                  </div>
-                  <div style={{ position: 'absolute', right: 6, bottom: 6, fontSize: 9,
-                    color: '#fff', padding: '2px 6px', borderRadius: 4,
-                    background: 'rgba(20,12,6,.6)', backdropFilter: 'blur(4px)',
-                    fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic', letterSpacing: '.04em' }}>
-                    {i === 2 ? '0:18' : '0:24'}
-                  </div>
-                </React.Fragment>
-              )}
-            </div>
-          );
-        })}
+        {photos.map((p, i) => (
+          <PhotoTile key={p.id} photo={p} isFirst={i === 0} albumId={albumId} go={go}
+            onLongPress={onPhotoLongPress ? () => onPhotoLongPress(p) : undefined}/>
+        ))}
       </div>
     </div>
   );
 }
 
-function ScreenAlbum({ albumId = 'okinawa', go }) {
-  const album = ALBUMS.find(a => a.id === albumId);
-  const photos = PHOTOS[albumId];
-  const tagged = photos.map((p, idx) => ({ ...p, globalIndex: idx }));
-  const datePrefix = album.date.replace('通年', '2025.06');
-  const groups = [
-    { date: `${datePrefix}.10 (日)`, items: tagged.slice(0, 8) },
-    { date: `${datePrefix}.11 (月)`, items: tagged.slice(8, 16) },
-    { date: `${datePrefix}.12 (火)`, items: tagged.slice(16) },
-  ].filter(g => g.items.length > 0);
+function ScreenAlbum({ albumId, go }) {
+  const { config, updateConfig } = useConfig();
+  const { isAdmin } = useAdmin();
+  const album = config.albums.find(a => a.id === albumId) || config.albums[0];
+  const [showUploader, setShowUploader] = React.useState(false);
+  const [photoMenu, setPhotoMenu] = React.useState(null);
+  const [confirmDeletePhoto, setConfirmDeletePhoto] = React.useState(null);
+
+  if (!album) {
+    return (
+      <div className="screen-enter" style={{ height: '100%', position: 'relative', background: 'var(--bg)' }}>
+        <div style={{ padding: '120px 22px', textAlign: 'center', color: 'var(--ink-3)' }}>アルバムが見つかりません。</div>
+        <TabBar active="home" go={go}/>
+      </div>
+    );
+  }
+
+  const photos = (album.photos || []).map((p, idx) => ({ ...p, _idx: idx }));
+  const cover = coverUrl(album, 'full');
+
+  const groups = [];
+  if (photos.length > 0) {
+    if (photos.length <= 8) {
+      groups.push({ date: album.date, items: photos });
+    } else {
+      const datePrefix = String(album.date).replace('通年', '2025.06');
+      groups.push({ date: `${datePrefix}.10 (日)`, items: photos.slice(0, 8) });
+      if (photos.length > 8)  groups.push({ date: `${datePrefix}.11 (月)`, items: photos.slice(8, 16) });
+      if (photos.length > 16) groups.push({ date: `${datePrefix}.12 (火)`, items: photos.slice(16) });
+    }
+  }
+
+  const removePhoto = (photoId) => {
+    updateConfig(d => {
+      const a = d.albums.find(x => x.id === album.id);
+      if (!a) return;
+      a.photos = a.photos.filter(p => p.id !== photoId);
+      if (a.coverPhotoId === photoId) a.coverPhotoId = a.photos.length ? a.photos[0].id : null;
+    });
+  };
+
+  const setCover = (photoId) => {
+    updateConfig(d => {
+      const a = d.albums.find(x => x.id === album.id);
+      if (a) a.coverPhotoId = photoId;
+    });
+  };
 
   return (
     <div className="screen-enter" style={{ height: '100%', overflow: 'hidden', position: 'relative', background: 'var(--bg)' }}>
       <div style={{ height: '100%', overflow: 'auto', paddingBottom: 110 }}>
         <div style={{ position: 'relative', height: 360,
-          background: `url(project/placeholders/${album.cover}-lg.svg) center/cover` }}>
+          background: `url(${cover}) center/cover, var(--bg-soft)` }}>
           <div style={{ position: 'absolute', inset: 0,
             background: 'linear-gradient(180deg, rgba(20,12,6,.35) 0%, rgba(20,12,6,0) 35%, rgba(20,12,6,0) 60%, rgba(245,239,230,1) 100%)' }}/>
 
@@ -543,25 +2459,33 @@ function ScreenAlbum({ albumId = 'okinawa', go }) {
 
           <div style={{ position: 'absolute', left: 22, right: 22, bottom: 28, color: '#fff' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5,
-              fontSize: 10.5, letterSpacing: '.18em', textTransform: 'uppercase',
-              opacity: .9, marginBottom: 6 }}>
-              <Icon.Pin/> {album.subtitle}
+              fontSize: 10.5, letterSpacing: '.18em', textTransform: 'uppercase', opacity: .9, marginBottom: 6 }}>
+              <Icon.Pin/>{' '}
+              <EditableText value={album.subtitle} dark
+                onSave={v => updateConfig(d => { const a = d.albums.find(x => x.id === album.id); if (a) a.subtitle = v; })}/>
             </div>
             <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 32, fontWeight: 500,
-              lineHeight: 1.18, marginBottom: 8 }}>{album.title}</div>
-            <div style={{ fontSize: 12.5, opacity: .9, lineHeight: 1.6, maxWidth: 280 }}>{album.desc}</div>
+              lineHeight: 1.18, marginBottom: 8 }}>
+              <EditableText value={album.title} dark
+                onSave={v => updateConfig(d => { const a = d.albums.find(x => x.id === album.id); if (a) a.title = v; })}/>
+            </div>
+            <div style={{ fontSize: 12.5, opacity: .9, lineHeight: 1.6, maxWidth: 280 }}>
+              <EditableText value={album.desc} dark multiline
+                onSave={v => updateConfig(d => { const a = d.albums.find(x => x.id === album.id); if (a) a.desc = v; })}/>
+            </div>
           </div>
         </div>
 
         <div style={{ padding: '6px 22px 16px', display: 'flex', alignItems: 'center', gap: 14,
           fontSize: 11.5, color: 'var(--ink-2)', letterSpacing: '.05em' }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-            <Icon.Calendar/> {album.date}
+            <Icon.Calendar/>{' '}
+            <EditableText value={album.date}
+              onSave={v => updateConfig(d => { const a = d.albums.find(x => x.id === album.id); if (a) { a.date = v; const m = String(v).match(/(\d{4})/); if (m) a.year = parseInt(m[1], 10); } })}/>
           </span>
           <span style={{ width: 1, height: 12, background: 'var(--line-strong)' }}/>
-          <span>{album.count}枚の写真</span>
-          <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4,
-            color: 'var(--accent)' }}>
+          <span>{photos.length}枚の写真</span>
+          <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--accent)' }}>
             <Icon.Heart/> 12
           </span>
         </div>
@@ -572,32 +2496,60 @@ function ScreenAlbum({ albumId = 'okinawa', go }) {
           ))}
         </div>
 
+        {groups.length === 0 && (
+          <div style={{ padding: '40px 22px 30px', textAlign: 'center', color: 'var(--ink-3)', fontSize: 13 }}>
+            まだ写真がありません。{isAdmin ? '右下の + ボタンから追加できます。' : ''}
+          </div>
+        )}
         {groups.map(g => (
-          <DateGroup key={g.date} date={g.date} photos={g.items} albumId={albumId} go={go}/>
+          <DateGroup key={g.date} date={g.date} photos={g.items} albumId={album.id} go={go}
+            onPhotoLongPress={isAdmin ? (p) => setPhotoMenu(p) : undefined}/>
         ))}
       </div>
+      {isAdmin && <FAB onClick={() => setShowUploader(true)} label="写真を追加"/>}
+      {showUploader && <PhotoUploaderModal albumId={album.id} onClose={() => setShowUploader(false)}/>}
+      {photoMenu && (
+        <LongPressMenu onClose={() => setPhotoMenu(null)} items={[
+          { icon: <Icon.Star/>, label: '表紙にする', onClick: () => setCover(photoMenu.id) },
+          { icon: <Icon.Trash/>, label: '写真を削除', danger: true, onClick: () => setConfirmDeletePhoto(photoMenu) },
+        ]}/>
+      )}
+      {confirmDeletePhoto && (
+        <ConfirmModal title="写真を削除" message="この写真を削除しますか？(Cloudinary 上のファイルは別途削除が必要です)"
+          onCancel={() => setConfirmDeletePhoto(null)}
+          onConfirm={() => { removePhoto(confirmDeletePhoto.id); setConfirmDeletePhoto(null); }}/>
+      )}
       <TabBar active="home" go={go}/>
     </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────
-// LIGHTBOX (photo)
+// LIGHTBOX
 // ─────────────────────────────────────────────────────────
-function ScreenLightbox({ albumId = 'kyoto', photoIndex = 2, go }) {
-  const album = ALBUMS.find(a => a.id === albumId);
-  const photos = PHOTOS[albumId];
-  const [idx, setIdx] = React.useState(photoIndex);
+function ScreenLightbox({ albumId, photoIndex = 0, go }) {
+  const { config } = useConfig();
+  const album = config.albums.find(a => a.id === albumId) || config.albums[0];
+  const photos = (album && album.photos) || [];
+  const [idx, setIdx] = React.useState(Math.min(photoIndex, Math.max(0, photos.length - 1)));
   const photo = photos[idx];
+
+  if (!photo) {
+    return (
+      <div className="screen-enter" style={{ height: '100%', background: '#0e0a06' }}>
+        <div style={{ padding: 60, textAlign: 'center', color: 'rgba(255,255,255,.7)' }}>写真がありません</div>
+      </div>
+    );
+  }
 
   return (
     <div className="screen-enter" style={{ height: '100%', position: 'relative', background: '#0e0a06', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', inset: 0,
-        background: `url(${photo.full}) center/cover`, filter: 'blur(40px) saturate(.7)', opacity: .4 }}/>
+        background: `url(${imgUrl(photo.src, 'full')}) center/cover`, filter: 'blur(40px) saturate(.7)', opacity: .4 }}/>
 
       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '110px 16px 230px' }}>
         <div style={{ width: '100%', aspectRatio: '3 / 4', borderRadius: 14,
-          background: `url(${photo.full}) center/cover`,
+          background: `url(${imgUrl(photo.src, 'full')}) center/cover`,
           boxShadow: '0 20px 60px rgba(0,0,0,.5), 0 4px 14px rgba(0,0,0,.4)' }}/>
       </div>
 
@@ -614,7 +2566,7 @@ function ScreenLightbox({ albumId = 'kyoto', photoIndex = 2, go }) {
       <div style={{ position: 'absolute', top: 118, left: 0, right: 0, textAlign: 'center',
         zIndex: 10, fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic',
         fontSize: 13, color: 'rgba(255,255,255,.65)', letterSpacing: '.1em' }}>
-        {String(idx+1).padStart(2,'0')} / {String(album.count).padStart(2,'0')}
+        {String(idx+1).padStart(2,'0')} / {String(photos.length).padStart(2,'0')}
       </div>
 
       {idx > 0 && (
@@ -673,116 +2625,19 @@ function ScreenLightbox({ albumId = 'kyoto', photoIndex = 2, go }) {
 }
 
 // ─────────────────────────────────────────────────────────
-// VIDEO LIGHTBOX
-// ─────────────────────────────────────────────────────────
-function ScreenVideoLightbox({ albumId = 'okinawa', photoIndex = 5, go }) {
-  const album = ALBUMS.find(a => a.id === albumId);
-  const photo = PHOTOS[albumId][photoIndex];
-
-  return (
-    <div className="screen-enter" style={{ height: '100%', position: 'relative', background: '#0a0703', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', inset: 0,
-        background: `url(${photo.full}) center/cover`, filter: 'blur(40px) saturate(.7)', opacity: .35 }}/>
-
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '110px 16px 240px' }}>
-        <div style={{ position: 'relative', width: '100%', aspectRatio: '3 / 4', borderRadius: 14,
-          background: `url(${photo.full}) center/cover`,
-          boxShadow: '0 20px 60px rgba(0,0,0,.5), 0 4px 14px rgba(0,0,0,.4)', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-            width: 76, height: 76, borderRadius: 999,
-            background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(10px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 8px 28px rgba(0,0,0,.4)' }}>
-            <svg width="28" height="28" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="#2a221a"/></svg>
-          </div>
-          <div style={{ position: 'absolute', left: 0, right: 0, top: 'calc(50% + 52px)',
-            textAlign: 'center', color: '#fff', fontSize: 11, letterSpacing: '.1em',
-            textShadow: '0 1px 6px rgba(0,0,0,.5)' }}>
-            タップで再生 · 音はオフではじまります
-          </div>
-          <div style={{ position: 'absolute', top: 12, right: 12,
-            padding: '4px 10px', borderRadius: 999,
-            background: 'rgba(20,12,6,.65)', backdropFilter: 'blur(8px)',
-            color: '#fff', fontSize: 11, letterSpacing: '.05em',
-            fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic',
-            display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 6, height: 6, borderRadius: 99, background: '#e6c89a' }}/>
-            VIDEO · 0:24
-          </div>
-        </div>
-      </div>
-
-      <div style={{ position: 'absolute', top: 60, left: 14, right: 14,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 10 }}>
-        <RoundBtn dark onClick={() => go('album', { albumId })}><Icon.Close/></RoundBtn>
-        <div style={{ textAlign: 'center', color: '#fff' }}>
-          <div style={{ fontSize: 10.5, letterSpacing: '.18em', opacity: .7, textTransform: 'uppercase' }}>{album.subtitle}</div>
-          <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 14, fontWeight: 500, marginTop: 2 }}>{album.title}</div>
-        </div>
-        <RoundBtn dark><Icon.More/></RoundBtn>
-      </div>
-
-      <div style={{ position: 'absolute', left: 14, right: 14, bottom: 28, zIndex: 10 }}>
-        <div style={{
-          background: 'rgba(20,14,8,.55)', border: '1px solid rgba(255,255,255,.1)',
-          backdropFilter: 'blur(20px) saturate(160%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(160%)',
-          borderRadius: 18, padding: '14px 16px', color: '#fff',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <div style={{ fontSize: 12, opacity: .85, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Icon.Calendar/> {photo.date}
-            </div>
-            <div style={{ fontSize: 11, opacity: .6,
-              fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic' }}>iPhone · 4K · 30fps</div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-            <span style={{ fontSize: 11, opacity: .8,
-              fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic' }}>0:00</span>
-            <div style={{ flex: 1, height: 3, borderRadius: 99,
-              background: 'rgba(255,255,255,.18)', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '0%', background: '#e6c89a' }}/>
-            </div>
-            <span style={{ fontSize: 11, opacity: .8,
-              fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic' }}>0:24</span>
-          </div>
-          <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 14, lineHeight: 1.55 }}>
-            波打ち際を駆ける足音と、笑い声。<br/>
-            <span style={{ opacity: .7, fontSize: 12 }}>音をオンにすると、はっきり聞こえます。</span>
-          </div>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: 14,
-          padding: '8px 4px', color: '#fff' }}>
-          {[
-            { icon: <Icon.Heart/>, label: 'お気に入り' },
-            { icon: <Icon.Down/>,  label: '保存' },
-            { icon: <Icon.Share/>, label: '共有' },
-            { icon: <Icon.Info/>,  label: '詳細' },
-          ].map(a => (
-            <div key={a.label} className="tap" style={{ display: 'flex', flexDirection: 'column',
-              alignItems: 'center', gap: 4, opacity: .92 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 999,
-                background: 'rgba(255,255,255,.10)', border: '1px solid rgba(255,255,255,.18)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{a.icon}</div>
-              <span style={{ fontSize: 10.5, letterSpacing: '.05em', opacity: .85 }}>{a.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────
 // YEARS
 // ─────────────────────────────────────────────────────────
 function ScreenYears({ go }) {
-  const years = [
-    { y: 2026, count: 18, albums: ['kyoto'] },
-    { y: 2025, count: 83, albums: ['okinawa','family','hokkaido','daily'] },
-    { y: 2024, count: 43, albums: ['paris','hawaii'] },
-    { y: 2023, count: 8,  albums: ['daily'] },
-  ];
+  const { config } = useConfig();
+  const albums = config.albums;
+  const yearMap = new Map();
+  albums.forEach(a => {
+    if (!yearMap.has(a.year)) yearMap.set(a.year, { y: a.year, count: 0, albums: [] });
+    const e = yearMap.get(a.year);
+    e.count += a.photos ? a.photos.length : 0;
+    e.albums.push(a);
+  });
+  const years = [...yearMap.values()].sort((a,b) => b.y - a.y);
 
   return (
     <div className="screen-enter" style={{ height: '100%', overflow: 'hidden', position: 'relative', background: 'var(--bg)' }}>
@@ -793,40 +2648,35 @@ function ScreenYears({ go }) {
           <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 30, fontWeight: 500,
             color: 'var(--ink)' }}>年で振り返る</div>
           <div style={{ fontSize: 12.5, color: 'var(--ink-2)', marginTop: 8, lineHeight: 1.7 }}>
-            写真は時間と一緒に。<br/>
-            上から新しい順に並んでいます。
+            写真は時間と一緒に。<br/>上から新しい順に並んでいます。
           </div>
         </div>
 
-        {years.map(({ y, count, albums }, i) => (
+        {years.map(({ y, count, albums: list }, i) => (
           <div key={y} style={{ padding: '22px 18px 8px' }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
-              padding: '0 4px 12px' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', padding: '0 4px 12px' }}>
               <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 44, fontWeight: 500,
                 color: 'var(--ink)', lineHeight: 1, letterSpacing: '.01em' }}>{y}</div>
               <div style={{ fontSize: 11.5, color: 'var(--ink-3)', letterSpacing: '.05em' }}>
-                {albums.length}冊 · {count}枚
+                {list.length}冊 · {count}枚
               </div>
             </div>
             <div style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '0 4px 4px' }}>
-              {albums.map(aid => {
-                const a = ALBUMS.find(x => x.id === aid);
-                return (
-                  <div key={aid} className="tap" onClick={() => go('album', { albumId: aid })}
-                    style={{ minWidth: 156, borderRadius: 14, overflow: 'hidden', flexShrink: 0,
-                      background: 'var(--bg-elev)', border: '1px solid var(--line)',
-                      boxShadow: 'var(--shadow-1)' }}>
-                    <div style={{ aspectRatio: '4 / 5',
-                      background: `url(project/placeholders/${a.cover}-lg.svg) center/cover` }}/>
-                    <div style={{ padding: '8px 11px 11px' }}>
-                      <div style={{ fontSize: 9.5, letterSpacing: '.16em', textTransform: 'uppercase',
-                        color: 'var(--ink-3)', marginBottom: 2 }}>{a.date}</div>
-                      <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 13.5,
-                        fontWeight: 500, color: 'var(--ink)' }}>{a.title}</div>
-                    </div>
+              {list.map(a => (
+                <div key={a.id} className="tap" onClick={() => go('album', { albumId: a.id })}
+                  style={{ minWidth: 156, borderRadius: 14, overflow: 'hidden', flexShrink: 0,
+                    background: 'var(--bg-elev)', border: '1px solid var(--line)',
+                    boxShadow: 'var(--shadow-1)' }}>
+                  <div style={{ aspectRatio: '4 / 5',
+                    background: `url(${coverUrl(a, 'full')}) center/cover, var(--bg-soft)` }}/>
+                  <div style={{ padding: '8px 11px 11px' }}>
+                    <div style={{ fontSize: 9.5, letterSpacing: '.16em', textTransform: 'uppercase',
+                      color: 'var(--ink-3)', marginBottom: 2 }}>{a.date}</div>
+                    <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 13.5,
+                      fontWeight: 500, color: 'var(--ink)' }}>{a.title}</div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
               <div className="tap" onClick={() => go('home')} style={{ minWidth: 90, display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                 borderRadius: 14, border: '1px dashed var(--line-strong)',
@@ -847,21 +2697,37 @@ function ScreenYears({ go }) {
 // SEARCH
 // ─────────────────────────────────────────────────────────
 function ScreenSearch({ go }) {
+  const { config } = useConfig();
+  const albums = config.albums;
   const recent = ['沖縄','おばあちゃん','京都','花火'];
   const all = [];
-  ALBUMS.forEach(a => {
-    PHOTOS[a.id].forEach((p, idx) => {
+  albums.forEach(a => {
+    (a.photos || []).forEach((p, idx) => {
       all.push({ ...p, _albumId: a.id, _photoIndex: idx });
     });
   });
   const allSliced = all.slice(0, 18);
+  const totalPhotos = totalPhotosOf(albums);
+
+  const findAlbum = (...ids) => {
+    for (const id of ids) {
+      const a = albums.find(x => x.id === id);
+      if (a) return a;
+    }
+    return albums[0];
+  };
+  const cats = [
+    { l: '人物', n: 41, a: findAlbum('family', 'daily') },
+    { l: '風景', n: 64, a: findAlbum('kyoto', 'hokkaido') },
+    { l: '海',   n: 32, a: findAlbum('okinawa', 'hawaii') },
+    { l: '街',   n: 28, a: findAlbum('paris') },
+  ].filter(c => c.a);
 
   return (
     <div className="screen-enter" style={{ height: '100%', overflow: 'hidden', position: 'relative', background: 'var(--bg)' }}>
       <div style={{ height: '100%', overflow: 'auto', paddingBottom: 110 }}>
         <div style={{ padding: '64px 22px 8px' }}>
-          <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 28, fontWeight: 500,
-            color: 'var(--ink)' }}>さがす</div>
+          <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 28, fontWeight: 500, color: 'var(--ink)' }}>さがす</div>
         </div>
 
         <div style={{ padding: '10px 18px 16px' }}>
@@ -885,16 +2751,11 @@ function ScreenSearch({ go }) {
         <div style={{ padding: '0 22px 12px', fontSize: 10.5, letterSpacing: '.18em',
           textTransform: 'uppercase', color: 'var(--ink-3)' }}>カテゴリ</div>
         <div style={{ padding: '0 18px 22px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          {[
-            { l: '人物', n: 41, c: 'family-1',  aid: 'family' },
-            { l: '風景', n: 64, c: 'kyoto-3',   aid: 'kyoto' },
-            { l: '海',   n: 32, c: 'okinawa-2', aid: 'okinawa' },
-            { l: '街',   n: 28, c: 'paris-1',   aid: 'paris' },
-          ].map(c => (
-            <div key={c.l} className="tap" onClick={() => go('album', { albumId: c.aid })}
+          {cats.map(c => (
+            <div key={c.l} className="tap" onClick={() => go('album', { albumId: c.a.id })}
               style={{ position: 'relative', borderRadius: 14, overflow: 'hidden',
                 aspectRatio: '16 / 9',
-                background: `url(project/placeholders/${c.c}-lg.svg) center/cover`,
+                background: `url(${coverUrl(c.a, 'full')}) center/cover, var(--bg-soft)`,
                 boxShadow: 'var(--shadow-1)' }}>
               <div style={{ position: 'absolute', inset: 0,
                 background: 'linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(20,12,6,.7) 100%)' }}/>
@@ -909,14 +2770,14 @@ function ScreenSearch({ go }) {
         <div style={{ padding: '0 22px 10px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
           <div style={{ fontSize: 10.5, letterSpacing: '.18em', textTransform: 'uppercase',
             color: 'var(--ink-3)' }}>すべての写真</div>
-          <div style={{ fontSize: 11, color: 'var(--accent)' }}>{TOTAL_PHOTOS}枚</div>
+          <div style={{ fontSize: 11, color: 'var(--accent)' }}>{totalPhotos}枚</div>
         </div>
         <div style={{ padding: '0 14px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
           {allSliced.map(p => (
             <div key={p.id} className="tap"
               onClick={() => go('lightbox', { albumId: p._albumId, photoIndex: p._photoIndex })}
               style={{ aspectRatio: '1 / 1', borderRadius: 4,
-                background: `url(${p.thumb}) center/cover` }}/>
+                background: `url(${imgUrl(p.src, 'thumb')}) center/cover, var(--bg-soft)` }}/>
           ))}
         </div>
       </div>
@@ -928,23 +2789,30 @@ function ScreenSearch({ go }) {
 // ─────────────────────────────────────────────────────────
 // PROFILE
 // ─────────────────────────────────────────────────────────
-function SettingsGroup({ title, rows }) {
+function SettingRow({ icon, label, detail, onClick }) {
+  return (
+    <div className="tap" onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px' }}>
+      <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(184,146,101,.14)',
+        color: 'var(--accent)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</div>
+      <div style={{ flex: 1, fontSize: 14, color: 'var(--ink)' }}>{label}</div>
+      <div style={{ fontSize: 12, color: 'var(--ink-3)' }}>{detail}</div>
+      <Icon.ChevR style={{ color: 'var(--ink-3)' }}/>
+    </div>
+  );
+}
+
+function SettingsGroup({ title, children }) {
+  const arr = React.Children.toArray(children);
   return (
     <div style={{ padding: '0 18px 22px' }}>
       <div style={{ fontSize: 10.5, letterSpacing: '.18em', textTransform: 'uppercase',
         color: 'var(--ink-3)', padding: '0 6px 8px' }}>{title}</div>
       <div style={{ borderRadius: 16, overflow: 'hidden', background: 'var(--bg-elev)',
-        border: '1px solid var(--line)', boxShadow: 'var(--shadow-1)' }}>
-        {rows.map((r, i) => (
-          <div key={r.label} className="tap" style={{ display: 'flex', alignItems: 'center', gap: 12,
-            padding: '12px 14px', borderTop: i ? '1px solid var(--line)' : 'none' }}>
-            <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(184,146,101,.14)',
-              color: 'var(--accent)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{r.icon}</div>
-            <div style={{ flex: 1, fontSize: 14, color: 'var(--ink)' }}>{r.label}</div>
-            <div style={{ fontSize: 12, color: 'var(--ink-3)' }}>{r.detail}</div>
-            <Icon.ChevR style={{ color: 'var(--ink-3)' }}/>
-          </div>
+        border: '1px solid var(--line)', boxShadow: 'var(--shadow-1)',
+        display: 'flex', flexDirection: 'column' }}>
+        {arr.map((c, i) => (
+          <div key={i} style={{ borderTop: i ? '1px solid var(--line)' : 'none' }}>{c}</div>
         ))}
       </div>
     </div>
@@ -952,16 +2820,15 @@ function SettingsGroup({ title, rows }) {
 }
 
 function ScreenProfile({ go }) {
-  const rows1 = [
-    { label: 'みんなの招待状', detail: '4名がアクセス中', icon: <Icon.User/> },
-    { label: '合言葉の変更',   detail: '最終: 2026.01.04', icon: <Icon.Lock/> },
-    { label: '通知',          detail: 'ON',                icon: <Icon.Sparkle/> },
-  ];
-  const rows2 = [
-    { label: '画質',           detail: 'オリジナル', icon: <Icon.Down/> },
-    { label: 'ダウンロード許可', detail: '家族のみ',   icon: <Icon.Down/> },
-    { label: 'このサイトについて', detail: 'v.1.0',   icon: <Icon.Info/> },
-  ];
+  const { config, updateConfig } = useConfig();
+  const { isAdmin, logout } = useAdmin();
+  const albums = config.albums;
+  const totalPhotos = totalPhotosOf(albums);
+  const [showAdminLogin, setShowAdminLogin] = React.useState(false);
+  const [showFamilyPwChange, setShowFamilyPwChange] = React.useState(false);
+  const [showAdminPwChange, setShowAdminPwChange] = React.useState(false);
+  const [showCloud, setShowCloud] = React.useState(false);
+  const [showPublish, setShowPublish] = React.useState(false);
 
   return (
     <div className="screen-enter" style={{ height: '100%', overflow: 'hidden', position: 'relative', background: 'var(--bg)' }}>
@@ -971,12 +2838,17 @@ function ScreenProfile({ go }) {
             background: 'linear-gradient(135deg, #c9a065 0%, #7a4f2c 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: '#fff', fontFamily: "'Cormorant Garamond',serif", fontSize: 30, fontWeight: 500,
-            boxShadow: 'var(--shadow-2)', border: '3px solid var(--bg-elev)' }}>A</div>
-          <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 22, fontWeight: 500,
-            color: 'var(--ink)' }}>あやか</div>
+            boxShadow: 'var(--shadow-2)', border: '3px solid var(--bg-elev)' }}>
+            {config.profile.userInitial || (config.profile.userName || 'A').slice(0, 1)}
+          </div>
+          <div style={{ fontFamily: "'Shippori Mincho',serif", fontSize: 22, fontWeight: 500, color: 'var(--ink)' }}>
+            <EditableText value={config.profile.userName}
+              onSave={v => updateConfig(d => { d.profile.userName = v; d.profile.userInitial = (v || 'A').slice(0,1).toUpperCase(); })}/>
+          </div>
           <div style={{ fontSize: 12, color: 'var(--ink-3)', marginTop: 4, letterSpacing: '.06em',
             display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-            <Icon.Lock/> 家族 · 管理者
+            <Icon.Lock/>{' '}
+            <EditableText value={config.profile.userRole} onSave={v => updateConfig(d => { d.profile.userRole = v; })}/>
           </div>
         </div>
 
@@ -985,8 +2857,8 @@ function ScreenProfile({ go }) {
           background: 'var(--bg-elev)', border: '1px solid var(--line)',
           borderRadius: 16, boxShadow: 'var(--shadow-1)' }}>
           {[
-            { n: TOTAL_PHOTOS, l: '写真' },
-            { n: ALBUMS.length, l: 'アルバム' },
+            { n: totalPhotos, l: '写真' },
+            { n: albums.length, l: 'アルバム' },
             { n: 4, l: 'みんな' },
           ].map((s, i, arr) => (
             <div key={s.l} style={{ textAlign: 'center', position: 'relative' }}>
@@ -999,11 +2871,38 @@ function ScreenProfile({ go }) {
           ))}
         </div>
 
-        <SettingsGroup title="家族・プライバシー" rows={rows1}/>
-        <SettingsGroup title="表示と保存" rows={rows2}/>
+        <SettingsGroup title="家族・プライバシー">
+          <SettingRow icon={<Icon.User/>} label="みんなの招待状" detail="4名がアクセス中"/>
+          <SettingRow icon={<Icon.Lock/>} label="合言葉の変更" detail={`最終: ${config.auth.passphraseUpdatedAt || ''}`}
+            onClick={() => setShowFamilyPwChange(true)}/>
+          <SettingRow icon={<Icon.Sparkle/>} label="通知" detail="ON"/>
+        </SettingsGroup>
 
-        <div style={{ padding: '8px 18px 32px' }}>
-          <div className="tap" onClick={() => go('lock')} style={{
+        <SettingsGroup title="表示と保存">
+          <SettingRow icon={<Icon.Down/>} label="画質" detail="オリジナル"/>
+          <SettingRow icon={<Icon.Down/>} label="ダウンロード許可" detail="家族のみ"/>
+          <SettingRow icon={<Icon.Info/>} label="このサイトについて" detail="v.1.1"/>
+        </SettingsGroup>
+
+        {isAdmin && (
+          <SettingsGroup title="管理者メニュー">
+            <SettingRow icon={<Icon.Camera/>} label="Cloudinary 設定"
+              detail={config.cloudinary.cloudName ? '設定済' : '未設定'}
+              onClick={() => setShowCloud(true)}/>
+            <SettingRow icon={<Icon.Lock/>} label="管理者パスワードの変更" detail=""
+              onClick={() => setShowAdminPwChange(true)}/>
+            <SettingRow icon={<Icon.Down/>} label="公開・書き出し" detail="HTML / JSON"
+              onClick={() => setShowPublish(true)}/>
+            <SettingRow icon={<Icon.Logout/>} label="管理者ログアウト" detail=""
+              onClick={() => { logout(); }}/>
+          </SettingsGroup>
+        )}
+
+        <div style={{ padding: '8px 18px 18px' }}>
+          <div className="tap" onClick={() => {
+            try { sessionStorage.removeItem(UNLOCK_KEY); } catch (e) {}
+            go('lock');
+          }} style={{
             height: 48, borderRadius: 14, background: 'var(--bg-elev)',
             border: '1px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--accent)', fontSize: 14, fontWeight: 500 }}>
@@ -1011,11 +2910,28 @@ function ScreenProfile({ go }) {
           </div>
         </div>
 
+        {!isAdmin && (
+          <div style={{ padding: '0 18px 24px' }}>
+            <div className="tap" onClick={() => setShowAdminLogin(true)} style={{
+              height: 44, borderRadius: 12, background: 'transparent',
+              border: '1px dashed var(--line-strong)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'var(--ink-3)', fontSize: 13, letterSpacing: '.04em' }}>
+              管理者でログイン
+            </div>
+          </div>
+        )}
+
         <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--ink-3)', paddingBottom: 16,
           fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic', letterSpacing: '.08em' }}>
-          Memoria · made with love
+          <EditableText value={config.site.footer} onSave={v => updateConfig(d => { d.site.footer = v; })}/>
         </div>
       </div>
+      {showAdminLogin && <AdminLoginModal onClose={() => setShowAdminLogin(false)}/>}
+      {showFamilyPwChange && <PassphraseChangeModal kind="family" onClose={() => setShowFamilyPwChange(false)}/>}
+      {showAdminPwChange && <PassphraseChangeModal kind="admin" onClose={() => setShowAdminPwChange(false)}/>}
+      {showCloud && <CloudinarySettingsModal onClose={() => setShowCloud(false)}/>}
+      {showPublish && <PublishModal onClose={() => setShowPublish(false)}/>}
       <TabBar active="profile" go={go}/>
     </div>
   );
@@ -1024,10 +2940,14 @@ function ScreenProfile({ go }) {
 // ─────────────────────────────────────────────────────────
 // APP ROUTER
 // ─────────────────────────────────────────────────────────
-function App() {
-  const [nav, setNav] = React.useState({ screen: 'lock' });
+function AppRouter() {
+  const { isAdmin, logout } = useAdmin();
+  const initialScreen = (() => {
+    try { return sessionStorage.getItem(UNLOCK_KEY) === '1' ? 'home' : 'lock'; }
+    catch (e) { return 'lock'; }
+  })();
+  const [nav, setNav] = React.useState({ screen: initialScreen });
   const go = (screen, extra = {}) => setNav({ screen, ...extra });
-
   const { screen, albumId, photoIndex } = nav;
 
   let view;
@@ -1037,19 +2957,33 @@ function App() {
     case 'albums-list':    view = <ScreenAlbumsList go={go}/>; break;
     case 'album':          view = <ScreenAlbum albumId={albumId} go={go}/>; break;
     case 'lightbox':       view = <ScreenLightbox albumId={albumId} photoIndex={photoIndex} go={go}/>; break;
-    case 'video-lightbox': view = <ScreenVideoLightbox albumId={albumId} photoIndex={photoIndex} go={go}/>; break;
     case 'years':          view = <ScreenYears go={go}/>; break;
     case 'search':         view = <ScreenSearch go={go}/>; break;
     case 'profile':        view = <ScreenProfile go={go}/>; break;
     default:               view = <ScreenHome go={go}/>;
   }
 
+  const showAdminBar = isAdmin && screen !== 'lock';
+
   return (
-    <div className="phone-screen" key={`${screen}-${albumId || ''}-${photoIndex ?? ''}`}
+    <div className="phone-screen" key={`${screen}-${albumId || ''}-${photoIndex == null ? '' : photoIndex}`}
       style={{ width: '100%', maxWidth: 430, margin: '0 auto', height: '100dvh',
         overflow: 'hidden', position: 'relative' }}>
-      {view}
+      <AdminBar isAdmin={showAdminBar} onLogout={logout}/>
+      <div style={{ position: 'absolute', top: showAdminBar ? 30 : 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
+        {view}
+      </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <ConfigProvider>
+      <AdminProvider>
+        <AppRouter/>
+      </AdminProvider>
+    </ConfigProvider>
   );
 }
 
